@@ -34,28 +34,12 @@
 
 using mbed::callback;
 
-BleUart* bleuart;
-bool isconnected = false;
-void serviceinit(){
-	bleuart->init_ble();
-}
-
-void isbleconnected(BLEProcess* ble_process) {
-    isconnected = ble_process->isconnected();
-	if(isconnected)
-		serviceinit();
-}
 
 int main(void) {
 	events::EventQueue event_queue;
 	BLE &ble_interface = BLE::Instance();
 	BLEProcess ble_process(event_queue, ble_interface);
 	ble_process.on_init(NULL);
-	bleuart = new BleUart(ble_interface);
-
-	if(ble_process.start()) {
-		event_queue.call_every(10,isbleconnected, &ble_process);
-	}
-
+	ble_process.start();
 	event_queue.dispatch_forever();
 }

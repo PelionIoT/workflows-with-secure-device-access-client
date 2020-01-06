@@ -109,6 +109,7 @@ void BLEProcess::when_init_complete(BLE::InitializationCompleteCallbackContext *
     gap.onConnection(this, &BLEProcess::when_connection);
     gap.onDisconnection(this, &BLEProcess::when_disconnection);
 
+    _bleuart = new BleUart(_ble_interface);
     if (!set_advertising_parameters()) {
         return;
     }
@@ -130,8 +131,10 @@ void BLEProcess::when_init_complete(BLE::InitializationCompleteCallbackContext *
 void BLEProcess::when_connection(const Gap::ConnectionCallbackParams_t *connection_event)
 {
     printf("Connected.\r\n");
+
     _isconnected = true;
-    // _event_queue.call_every(5, callback(this,&BLEProcess::wait));
+    _bleuart->init_ble();
+    _event_queue.call_every(10, callback(this,&BLEProcess::wait));
 }
 
 bool BLEProcess::isconnected(){
@@ -139,10 +142,10 @@ bool BLEProcess::isconnected(){
 }
 
 void BLEProcess::wait(){
-    char buff[25]="";
-    if(_bleuart->read(buff,25)){
-        _bleuart->write(buff, 25);
-        printf("%s",buff);
+    char buff[18]="";
+    if(_bleuart->read(buff,20)){
+        _bleuart->write(buff, 20);
+        printf("%s\r\n",buff);
         }
 }
 
@@ -196,7 +199,7 @@ bool BLEProcess::set_advertising_data()
         ble::LEGACY_ADVERTISING_HANDLE,
         ble::AdvertisingDataSimpleBuilder<ble::LEGACY_ADVERTISING_MAX_SIZE>()
             .setFlags()
-            .setName("BLE UART PB")
+            .setName("BLE Uart Example")
             .getAdvertisingData()
     );
 
