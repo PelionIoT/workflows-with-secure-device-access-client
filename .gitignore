@@ -1,0 +1,6 @@
+/BUILD
+/mbed-os
+/shields
+mbed_settings.pyc
+/mbed_settings.py
+.mbed
