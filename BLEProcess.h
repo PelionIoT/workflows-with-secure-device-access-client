@@ -27,7 +27,6 @@
 #include "ble/GapAdvertisingParams.h"
 #include "ble/GapAdvertisingData.h"
 #include "ble/FunctionPointerWithContext.h"
-#include "bleuart.h"
 
 
 
@@ -73,8 +72,6 @@ public:
      */
     void stop();
     /*returns the connection status of ble*/
-    bool isconnected();
-    /*polling the message*/
 
 private:
     void schedule_ble_events(BLE::OnEventsToProcessCallbackContext *event);
@@ -89,11 +86,8 @@ private:
     int getIndex();
     char* getBuff();
     void wait();
-
-    bool _isconnected = false;
     events::EventQueue &_event_queue;
     BLE &_ble_interface;
-    BleUart* _bleuart;
     mbed::Callback<void(BLE&, events::EventQueue&)> _post_init_cb;
 };
 
