@@ -1,13 +1,16 @@
 {
+    "macros": [
+        "MBED_CLIENT_USER_CONFIG_FILE=\"mbed_cloud_client_user_config.h\"",
+        "MBED_CLOUD_CLIENT_USER_CONFIG_FILE=\"mbed_cloud_client_user_config.h\"",
+        "MBED_CLOUD_CLIENT_ENABLE_SDA=1"
+    ],
     "target_overrides": {
         "*": {
             "platform.stdio-buffered-serial": true,
             "platform.stdio-baud-rate": 115200,
             "platform.stdio-convert-newlines": true,
             "target.features_add": [ "STORAGE" ],
-            "mbed-trace.enable": null,
-            "target.OUTPUT_EXT": "bin"
-
+            "mbed-trace.enable": null
         },
         "K64F": {
             "target.features_add": ["BLE"],
@@ -18,14 +21,72 @@
             "target.extra_labels_add": ["CORDIO", "CORDIO_BLUENRG"]
         },
         "DISCO_L475VG_IOT01A": {
-            "target.features_add": ["BLE"],
-            "target.extra_labels_add": ["CORDIO", "CORDIO_BLUENRG"]
+            "target.features_add"                        :["BLE"],
+            "target.extra_labels_add"                    :["CORDIO", "CORDIO_BLUENRG"],
+            "storage.storage_type"                       : "FILESYSTEM",
+            "primary-partition-size"                     : "(4*1024*1024)",
+            "sotp-section-1-address"                     : "(0x08000000 + (1024*1024) - 2*(2*1024))",
+            "sotp-section-1-size"                        : "(2*1024)",
+            "sotp-section-2-address"                     : "(0x08000000 + (1024*1024) - 1*(2*1024))",
+            "sotp-section-2-size"                        : "(2*1024)",
+            "sotp-num-sections"                          : 2,
+            "target.OUTPUT_EXT"                          :"bin"
         },
         "NRF52840_DK": {
             "target.features_add": ["BLE"]
         },
         "NRF52_DK": {
             "target.features_add": ["BLE"]
+        }
+    },
+    "config": {
+        "developer-mode": {
+            "help"      : "Enable Developer mode to skip Factory enrollment",
+            "options"   : [null, 1],
+            "value"     : null
+        },
+        "main-stack-size": {
+            "value": 6144
+        },
+        "primary-partition-size": {
+            "help": "The primary partition size in bytes on the target device storage",
+            "macro_name": "PRIMARY_PARTITION_SIZE",
+            "value": null
+        },
+        "sotp-section-1-address": {
+            "help": "Flash sector address for SOTP sector 1",
+            "macro_name": "PAL_INTERNAL_FLASH_SECTION_1_ADDRESS",
+            "value": null
+        },
+        "sotp-section-1-size": {
+            "help": "Flash sector size for SOTP sector 1",
+            "macro_name": "PAL_INTERNAL_FLASH_SECTION_1_SIZE",
+            "value": null
+        },
+        "sotp-section-2-address": {
+            "help": "Flash sector address for SOTP sector 2",
+            "macro_name": "PAL_INTERNAL_FLASH_SECTION_2_ADDRESS",
+            "value": null
+        },
+        "sotp-section-2-size": {
+            "help": "Flash sector size for SOTP sector 2",
+            "macro_name": "PAL_INTERNAL_FLASH_SECTION_2_SIZE",
+            "value": null
+        },
+        "sotp-num-sections": {
+            "help": "Number of SOTP sections",
+            "macro_name": "PAL_INT_FLASH_NUM_SECTIONS",
+            "value": null
+        },
+        "mbedtls-user-config-file": {
+            "help": "Mbetls user configuration file",
+            "macro_name": "MBEDTLS_USER_CONFIG_FILE",
+            "value": null
+        },
+        "pal-user-defined-config": {
+            "help": "PAL user configuration file",
+            "macro_name": "PAL_USER_DEFINED_CONFIGURATION",
+            "value": null
         }
     }
 }

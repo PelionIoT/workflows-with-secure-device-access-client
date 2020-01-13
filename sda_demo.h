@@ -14,30 +14,17 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-// Note: this macro is needed on armcc to get the the PRI*32 macros
-// from inttypes.h in a C++ code.
-#ifndef _COMM_INTERFACE_H_
-#define _COMM_INTERFACE_H_
-#endif
-#include "events/EventQueue.h"
-#include "BLEProcess.h"
-#include "blesda.h"
-//#include "ftcd_comm_base.h"
+#ifndef __SDA_DEMO_H__
+#define __SDA_DEMO_H__
 
+#include <inttypes.h>
 
-class Comm_interface{
-    public:
-        Comm_interface(){
-        };
-        bool init();
-        bool start();
-        int wait_for_message(uint8_t **message_out, uint32_t *message_size_out);
-        bool send_response(uint8_t* response, size_t message_size);
-        bool finish();
-    private:
-        bool isconnected();
-        events::EventQueue _event_queue;
-        BLEProcess* _bleprocess;
-        BLESDA* _blesda;
-        bool _isconnected = false;
-};
+void demo_setup(void);
+void display_faulty_message(const char *fault_message);
+bool demo_callback_configure(int64_t temperature);
+bool demo_callback_read_data(void);
+bool demo_callback_update(void);
+bool demo_callback_restart(void);
+bool demo_callback_diagnostics(void);
+
+#endif //__SDA_DEMO_H__

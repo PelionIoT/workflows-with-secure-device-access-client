@@ -15,55 +15,59 @@
  */
 
 #include <stdio.h>
-#include "pretty_printer.h"
+#include "mbed_cloud_client_user_config.h"
 #include <stdint.h>
 #include <stdio.h>
 #include "events/EventQueue.h"
 #include "platform/Callback.h"
 #include "platform/NonCopyable.h"
-
 #include "BLEProcess.h"
 #include "ble/BLE.h"
 #include "ble/Gap.h"
 #include "ble/GapAdvertisingParams.h"
 #include "ble/GapAdvertisingData.h"
-#include "ble/services/UARTService.h"
+#include "mbed-trace/mbed_trace.h"
+#include "mbed-trace-helper.h"
+#include "mbed_stats_helper.h"
+#include "string"
 #include "comm_interface.h"
-
-#include "string" // for string class 
+#include "sdahelper.h"
 
 
 using mbed::callback;
 
-// BleUart* bleuart;
-// bool isconnected = false;
-// void serviceinit(){
-// 	bleuart->init_ble();
-// }
+static int g_demo_main_status = EXIT_FAILURE;   // holds the demo main task return code
 
-// void isbleconnected(BLEProcess* ble_process) {
-//     isconnected = ble_process->isconnected();
-// 	if(isconnected)
-// 		serviceinit();
-// }
+bool success;
 
-int main(void) {
-	// events::EventQueue event_queue;
-	// BLE &ble_interface = BLE::Instance();
-	// BLEProcess ble_process(event_queue, ble_interface);
-	// ble_process.on_init(NULL);
-	// bleuart = new BleUart(ble_interface);
+static void demo_main(){
+	mcc_platform_sw_build_info();
 
-	// if(ble_process.start()) {
-	// 	event_queue.call_every(10,isbleconnected, &ble_process);
-	// }
+    tr_cmdline("Secure-Device-Access initialization");
 
-	// event_queue.dispatch_forever();
-	uint8_t *request = NULL;
-    uint32_t request_size = 0;
-	Comm_interface* comm_interface;
-	comm_interface = new Comm_interface();
+    // Initialize storage
+    success = mcc_platform_storage_init() == 0;
+    if (success != true) {
+        tr_error("Failed initializing mcc platform storage\n");
+        return;
+    }
+	printf("SDA Init successfull\r\n");
+    success = factory_setup();
+
+	printf("Factory setup complete\r\n");
+	Comm_interface* comm_interface = new Comm_interface();
 	comm_interface->init();
 	comm_interface->start();
+}
 
+int main(void) {
+	success = mbed_trace_helper_init(TRACE_ACTIVE_LEVEL_ALL | TRACE_MODE_COLOR, false);
+    if (!success) {
+        return EXIT_FAILURE;
+    }
+	 success = (mcc_platform_init() == 0);
+    if (success) {
+        success = mcc_platform_run_program(&demo_main);
+    }
+    return success ? g_demo_main_status : EXIT_FAILURE;
 }

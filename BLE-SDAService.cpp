@@ -90,8 +90,6 @@ void BLESDA::onDataWritten(const GattWriteCallbackParams *params) {
             receiveBufferIndex = 0;
             memcpy(receiveBuffer, params->data, numBytesReceived);
         }
-        printf("On data Written %s\r\n", receiveBuffer);
-        printf("Bytes Read - %d\r\n", bytesRead);
         _sda_interface->sdaProcess(receiveBuffer, bytesRead);
     }
 }
