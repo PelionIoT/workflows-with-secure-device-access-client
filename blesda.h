@@ -14,26 +14,36 @@
  * limitations under the License.
  */
 
-#ifndef __BLE_SDA_SERVICE_H_
-#define __BLE_SDA_SERVICE_H_
-#endif
-
-#include "sda_interface.h"
+#ifndef _BLE_SDA_SERVICE_H_
+    #define _BLE_SDA_SERVICE_H_
 #include "ble/UUID.h"
 #include "ble/BLE.h"
 #include "ble/pal/Deprecated.h"
+#include "sda_interface.h"
 
-extern const uint8_t  UARTServiceBaseUUID[UUID::LENGTH_OF_LONG_UUID];
-extern const uint16_t UARTServiceShortUUID;
-extern const uint16_t UARTServiceTXCharacteristicShortUUID;
-extern const uint16_t UARTServiceRXCharacteristicShortUUID;
-
-extern const uint8_t  UARTServiceUUID[UUID::LENGTH_OF_LONG_UUID];
-extern const uint8_t  UARTServiceUUID_reversed[UUID::LENGTH_OF_LONG_UUID];
-
-extern const uint8_t  UARTServiceTXCharacteristicUUID[UUID::LENGTH_OF_LONG_UUID];
-extern const uint8_t  UARTServiceRXCharacteristicUUID[UUID::LENGTH_OF_LONG_UUID];
-
+const uint8_t  UARTServiceBaseUUID[UUID::LENGTH_OF_LONG_UUID] = {
+    0x6E, 0x40, 0x00, 0x00, 0xB5, 0xA3, 0xF3, 0x93,
+    0xE0, 0xA9, 0xE5, 0x0E, 0x24, 0xDC, 0xCA, 0x9E,
+};
+const uint16_t UARTServiceShortUUID                 = 0x0001;
+const uint16_t UARTServiceTXCharacteristicShortUUID = 0x0002;
+const uint16_t UARTServiceRXCharacteristicShortUUID = 0x0003;
+const uint8_t  UARTServiceUUID[UUID::LENGTH_OF_LONG_UUID] = {
+    0x6E, 0x40, (uint8_t)(UARTServiceShortUUID >> 8), (uint8_t)(UARTServiceShortUUID & 0xFF), 0xB5, 0xA3, 0xF3, 0x93,
+    0xE0, 0xA9, 0xE5, 0x0E, 0x24, 0xDC, 0xCA, 0x9E,
+};
+const uint8_t  UARTServiceUUID_reversed[UUID::LENGTH_OF_LONG_UUID] = {
+    0x9E, 0xCA, 0xDC, 0x24, 0x0E, 0xE5, 0xA9, 0xE0,
+    0x93, 0xF3, 0xA3, 0xB5, (uint8_t)(UARTServiceShortUUID & 0xFF), (uint8_t)(UARTServiceShortUUID >> 8), 0x40, 0x6E
+};
+const uint8_t  UARTServiceTXCharacteristicUUID[UUID::LENGTH_OF_LONG_UUID] = {
+    0x6E, 0x40, (uint8_t)(UARTServiceTXCharacteristicShortUUID >> 8), (uint8_t)(UARTServiceTXCharacteristicShortUUID & 0xFF), 0xB5, 0xA3, 0xF3, 0x93,
+    0xE0, 0xA9, 0xE5, 0x0E, 0x24, 0xDC, 0xCA, 0x9E,
+};
+const uint8_t  UARTServiceRXCharacteristicUUID[UUID::LENGTH_OF_LONG_UUID] = {
+    0x6E, 0x40, (uint8_t)(UARTServiceRXCharacteristicShortUUID >> 8), (uint8_t)(UARTServiceRXCharacteristicShortUUID & 0xFF), 0xB5, 0xA3, 0xF3, 0x93,
+    0xE0, 0xA9, 0xE5, 0x0E, 0x24, 0xDC, 0xCA, 0x9E,
+};
 
 class BLESDA {
 public:
@@ -46,24 +56,23 @@ public:
     * @param _ble
     *               BLE object for the underlying controller.
     */
-    BLESDA(BLE &_ble) :
+    BLESDA(BLE &_ble, char* endpointbuffer) :
         ble(_ble),
         receiveBuffer(),
         sendBuffer(),
         sendBufferIndex(0),
         numBytesReceived(0),
         receiveBufferIndex(0),
+        _endpointBuffer(endpointbuffer),
         txCharacteristic(UARTServiceTXCharacteristicUUID, receiveBuffer, 1, BLE_UART_SERVICE_MAX_DATA_LEN,
                          GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE_WITHOUT_RESPONSE),
-        rxCharacteristic(UARTServiceRXCharacteristicUUID, sendBuffer, 1, BLE_UART_SERVICE_MAX_DATA_LEN, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY),
-        epoint(UARTServiceRXCharacteristicUUID, sendBuffer, 1, BLE_UART_SERVICE_MAX_DATA_LEN, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ)
+        rxCharacteristic(UARTServiceRXCharacteristicUUID, sendBuffer, 1, BLE_UART_SERVICE_MAX_DATA_LEN, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY)
         {
-        GattCharacteristic *charTable[] = {&txCharacteristic, &rxCharacteristic, &epoint};
-        GattService SDAService(UARTServiceUUID, charTable, sizeof(charTable) / sizeof(GattCharacteristic *));
-
-        ble.addService(SDAService);
-        ble.onDataWritten(this, &BLESDA::onDataWritten);
-    }
+            GattCharacteristic *charTable[] = {&txCharacteristic, &rxCharacteristic};
+            GattService SDAService(UARTServiceUUID, charTable, sizeof(charTable) / sizeof(GattCharacteristic *));
+            ble.gattServer().addService(SDAService);
+            ble.gattServer().onDataWritten(this, &BLESDA::onDataWritten);
+        }
 
     /**
      * Note: TX and RX characteristics are to be interpreted from the viewpoint of the GATT client using this service.
@@ -73,7 +82,11 @@ public:
      * Note: TX and RX characteristics are to be interpreted from the viewpoint of the GATT client using this service.
      */
     uint16_t getRXCharacteristicHandle();
+    /*Need UUID of the service so that we can advertise that in the advertisement */
 
+    const uint8_t* getUUID(){
+        return UARTServiceUUID;
+    }
     /**
      * We attempt to collect bytes before pushing them to the UART RX
      * characteristic; writing to the RX characteristic then generates
@@ -129,28 +142,35 @@ public:
      * not used, this method can be used as a callback directly.
      */
     void onDataWritten(const GattWriteCallbackParams *params);
+    /*
+    This callback allows the connecting device to fetch the endpoint of the device so that it can proceed further.
+    */
+    void onDataRead(const GattReadCallbackParams *params);
+
 
 private:
     BLE                &ble;
 
     uint8_t             receiveBuffer[BLE_UART_SERVICE_MAX_DATA_LEN]; /**< The local buffer into which we receive
                                                                        *   inbound data before forwarding it to the
-                                                                       *   application. */
+                                                                       *   application.     */
 
     uint8_t             sendBuffer[BLE_UART_SERVICE_MAX_DATA_LEN];    /**< The local buffer into which outbound data is
                                                                        *   accumulated before being pushed to the
                                                                        *   rxCharacteristic. */
-    uint8_t             endpointBuffer[BLE_UART_SERVICE_MAX_DATA_LEN];
-    uint8_t             sendBufferIndex;
-    uint8_t             numBytesReceived;
-    uint8_t             receiveBufferIndex;
-    SDAInterface*       _sda_interface;
+    char*             _endpointBuffer;                                /*The local buffer that contains the endpoint of
+                                                                         the device.       */
+    uint8_t              sendBufferIndex;
+    uint8_t              numBytesReceived;
+    uint8_t              receiveBufferIndex;
+
+    SDAInterface*       _sda_interface;   /*Interface that communicates with SDA */
 
     GattCharacteristic  txCharacteristic; /**< From the point of view of the external client, this is the characteristic
                                            *   they'd write into in order to communicate with this application. */
     GattCharacteristic  rxCharacteristic; /**< From the point of view of the external client, this is the characteristic
                                            *   they'd read from in order to receive the bytes transmitted by this
                                            *   application. */
-    GattCharacteristic epoint; // characteristic  that returns the endpoint
 };
+#endif
 

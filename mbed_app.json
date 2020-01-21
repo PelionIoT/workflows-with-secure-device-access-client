@@ -6,87 +6,74 @@
     ],
     "target_overrides": {
         "*": {
-            "platform.stdio-buffered-serial": true,
-            "platform.stdio-baud-rate": 115200,
-            "platform.stdio-convert-newlines": true,
-            "target.features_add": [ "STORAGE" ],
-            "mbed-trace.enable": null
+            "platform.stdio-buffered-serial"             : true,
+            "platform.stdio-baud-rate"                   : 115200,
+            "platform.stdio-convert-newlines"            : true,
+            "target.features_add"                        : ["BOOTLOADER","STORAGE" ],
+            "mbed-trace.enable"                          : 1,
+            "mbed-cloud-client.external-sst-support"     : 1,
+            "target.OUTPUT_EXT"                          :"hex"
         },
         "K64F": {
-            "target.features_add": ["BLE"],
-            "target.extra_labels_add": ["CORDIO", "CORDIO_BLUENRG"]
-        },
-        "NUCLEO_F401RE": {
-            "target.features_add": ["BLE"],
-            "target.extra_labels_add": ["CORDIO", "CORDIO_BLUENRG"]
+            "lwip.tcpip-thread-stacksize"                : 2400,
+            "target.bootloader_img"                      : "tools/mbed-bootloader-k64f-block_device-kvstore-v4.1.0.bin",
+            "target.header_offset"                       : "0xa000",
+            "target.app_offset"                          : "0xa400",
+            "storage.storage_type"                       : "FILESYSTEM",
+            "storage_filesystem.filesystem"              : "LITTLE",
+            "storage_filesystem.blockdevice"             : "SD",
+            "storage_filesystem.internal_base_address"   : "(32*1024)",
+            "storage_filesystem.rbp_internal_size"       : "(8*1024)",
+            "storage_filesystem.external_base_address"   : "0x0",
+            "storage_filesystem.external_size"           : "(1024*1024*64)",
+            "update-client.bootloader-details"           : "0x00007188",
+            "update-client.application-details"          : "(40*1024)",
+            "mbedtls-user-config-file"                   : "\"mbedTLSConfig_mbedOS.h\"",
+            "pal-user-defined-config"                    : "\"pal_config_MbedOS.h\""
         },
         "DISCO_L475VG_IOT01A": {
+            "target.bootloader_img"                      : "tools/mbed-bootloader-disco_l475vg_iot01a-internal_qspif-kvstore-v4.1.0.bin",
             "target.features_add"                        :["BLE"],
             "target.extra_labels_add"                    :["CORDIO", "CORDIO_BLUENRG"],
-            "storage.storage_type"                       : "FILESYSTEM",
-            "primary-partition-size"                     : "(4*1024*1024)",
-            "sotp-section-1-address"                     : "(0x08000000 + (1024*1024) - 2*(2*1024))",
-            "sotp-section-1-size"                        : "(2*1024)",
-            "sotp-section-2-address"                     : "(0x08000000 + (1024*1024) - 1*(2*1024))",
-            "sotp-section-2-size"                        : "(2*1024)",
-            "sotp-num-sections"                          : 2,
-            "target.OUTPUT_EXT"                          :"bin"
-        },
-        "NRF52840_DK": {
-            "target.features_add": ["BLE"]
-        },
-        "NRF52_DK": {
-            "target.features_add": ["BLE"]
+            "target.header_offset"                       : "0x11000",
+            "target.app_offset"                          : "0x11400",
+            "target.components_add"                      : ["QSPIF"],
+            "bootloader-size"                            : "(36*1024)",
+            "storage.storage_type"                       : "TDB_INTERNAL",
+            "storage_tdb_internal.internal_base_address" : "(MBED_ROM_START + MBED_BOOTLOADER_SIZE)",
+            "storage_tdb_internal.internal_size"         : "(2*16*1024)",
+            "mbedtls-user-config-file"                   : "\"mbedTLSConfig_mbedOS.h\"",
+            "pal-user-defined-config"                    : "\"pal_config_MbedOS.h\""
         }
     },
     "config": {
-        "developer-mode": {
-            "help"      : "Enable Developer mode to skip Factory enrollment",
-            "options"   : [null, 1],
-            "value"     : null
+        "developer-mode"           : {
+            "help"                 : "Enable Developer mode to skip Factory enrollment",
+            "options"              : [null, 1],
+            "value"                : 1
         },
-        "main-stack-size": {
-            "value": 6144
+        "main-stack-size"          : {
+            "value"                : 8192
         },
-        "primary-partition-size": {
-            "help": "The primary partition size in bytes on the target device storage",
-            "macro_name": "PRIMARY_PARTITION_SIZE",
-            "value": null
+        "mbedtls-user-config-file" : {
+            "help"                 : "Mbetls user configuration file",
+            "macro_name"           : "MBEDTLS_USER_CONFIG_FILE",
+            "value"                : null
         },
-        "sotp-section-1-address": {
-            "help": "Flash sector address for SOTP sector 1",
-            "macro_name": "PAL_INTERNAL_FLASH_SECTION_1_ADDRESS",
-            "value": null
+        "pal-user-defined-config"  : {
+            "help"                 : "PAL user configuration file",
+            "macro_name"           : "PAL_USER_DEFINED_CONFIGURATION",
+            "value"                : null
         },
-        "sotp-section-1-size": {
-            "help": "Flash sector size for SOTP sector 1",
-            "macro_name": "PAL_INTERNAL_FLASH_SECTION_1_SIZE",
-            "value": null
+        "mbed-trace-max-level"     : {
+            "help"                 : "Max trace level. Must be one of the following: [TRACE_LEVEL_DEBUG, TRACE_LEVEL_INFO, TRACE_LEVEL_WARN, TRACE_LEVEL_ERROR, TRACE_LEVEL_CMD]",
+            "macro_name"           : "MBED_TRACE_MAX_LEVEL",
+            "value"                : "TRACE_LEVEL_ERROR"
         },
-        "sotp-section-2-address": {
-            "help": "Flash sector address for SOTP sector 2",
-            "macro_name": "PAL_INTERNAL_FLASH_SECTION_2_ADDRESS",
-            "value": null
-        },
-        "sotp-section-2-size": {
-            "help": "Flash sector size for SOTP sector 2",
-            "macro_name": "PAL_INTERNAL_FLASH_SECTION_2_SIZE",
-            "value": null
-        },
-        "sotp-num-sections": {
-            "help": "Number of SOTP sections",
-            "macro_name": "PAL_INT_FLASH_NUM_SECTIONS",
-            "value": null
-        },
-        "mbedtls-user-config-file": {
-            "help": "Mbetls user configuration file",
-            "macro_name": "MBEDTLS_USER_CONFIG_FILE",
-            "value": null
-        },
-        "pal-user-defined-config": {
-            "help": "PAL user configuration file",
-            "macro_name": "PAL_USER_DEFINED_CONFIGURATION",
-            "value": null
+        "bootloader-size": {
+            "help"      : "Helper macro to enable calculation of rom regions. target.header_offset and target.app_offset still needs to be calculated manually, though.",
+            "value"     : "(32*1024)",
+            "macro_name": "MBED_BOOTLOADER_SIZE"
         }
     }
 }

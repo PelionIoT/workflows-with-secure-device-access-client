@@ -38,10 +38,17 @@
 #include "sda_demo.h"
 
 
+#define TRACE_GROUP           "sdae"
+
+extern const uint8_t MBED_CLOUD_TRUST_ANCHOR_PK[];
+extern const uint32_t MBED_CLOUD_TRUST_ANCHOR_PK_SIZE;
+extern const char MBED_CLOUD_TRUST_ANCHOR_PK_NAME[];
 char *g_endpoint_name = NULL;
+
 static uint8_t g_app_user_response_buff[] = "This is app data buffer";
 
-bool get_endpoint_name(){
+
+char* get_endpoint_name(){
     kcm_status_e kcm_status = KCM_STATUS_SUCCESS;
     char* endpoint_name = NULL;
     size_t endpoint_buffer_size;
@@ -52,36 +59,30 @@ bool get_endpoint_name(){
     kcm_status = kcm_item_get_data_size((const uint8_t*)g_fcc_endpoint_parameter_name, strlen(g_fcc_endpoint_parameter_name), KCM_CONFIG_ITEM, &endpoint_name_size);
     if (kcm_status != KCM_STATUS_SUCCESS) {
         printf("kcm_item_get_data_size failed (%u)", kcm_status);
-        return false;
+        return NULL;
     }
 
     endpoint_buffer_size = endpoint_name_size + 1; /* for '\0' */
 
     endpoint_name = (char*)malloc(endpoint_buffer_size);
-    if (endpoint_name == NULL) {
-        return false;
-    }
-
     memset(endpoint_name, 0, endpoint_buffer_size);
-
     kcm_status = kcm_item_get_data((const uint8_t*)g_fcc_endpoint_parameter_name, strlen(g_fcc_endpoint_parameter_name), KCM_CONFIG_ITEM, (uint8_t*)endpoint_name, endpoint_name_size, &endpoint_name_size);
     if (kcm_status != KCM_STATUS_SUCCESS) {
         free(endpoint_name);
         printf("kcm_item_get_data failed (%u)", kcm_status);
-        return false;
+        return NULL;
     }
 
     // save endpoint_name for later use
-    g_endpoint_name = endpoint_name;
 
-    printf("Endpoint name: %s\r\n", endpoint_name);
+    //printf("inside get_endpoint Endpoint name: %s\r\n", endpoint_name);
 
-    return true;
+    return endpoint_name;
 }
 
 bool process_request_fetch_response(const uint8_t *request,uint32_t request_size,uint8_t *response,size_t response_max_size, size_t *response_actual_size)
 {
-
+    //printf("Here in sda process fetch response\r\n");
     sda_status_e sda_status = SDA_STATUS_SUCCESS;
 
     //Call to sda_operation_process to process current message, the response message will be returned as output.
@@ -111,6 +112,7 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
     SDA_UNUSED_PARAM(callback_param);
 
     sda_status = sda_command_type_get(handle, &command_type);
+    printf("Here in application callback\r\n");
     if (sda_status != SDA_STATUS_SUCCESS) {
         tr_error("Secure-Device-Access failed getting command type (%u)", sda_status);
         sda_status_for_response = sda_status;
@@ -323,9 +325,9 @@ access_denied:
 
 bool factory_setup(void)
 {
-#if MBED_CONF_APP_DEVELOPER_MODE == 1
+    #if MBED_CONF_APP_DEVELOPER_MODE == 1
     kcm_status_e kcm_status = KCM_STATUS_SUCCESS;
-#endif
+    #endif
     fcc_status_e fcc_status = FCC_STATUS_SUCCESS;
     bool status = true;
 
@@ -375,10 +377,10 @@ bool factory_setup(void)
     }
 
     //Get endpoint name
-    status = get_endpoint_name();
-    if (status != true) {
-        tr_error("get_endpoint_name failed");
-    }
+    // status = get_endpoint_name();
+    // if (status != true) {
+    //     tr_error("get_endpoint_name failed");
+    // }
 out:
     // Finalize FFC
     fcc_status = fcc_finalize();

@@ -27,6 +27,7 @@
 #include "ble/GapAdvertisingParams.h"
 #include "ble/GapAdvertisingData.h"
 #include "ble/FunctionPointerWithContext.h"
+#include "blesda.h"
 
 
 
@@ -44,11 +45,18 @@ public:
      *
      * Call start() to initiate ble processing.
      */
-    BLEProcess(events::EventQueue &event_queue, BLE &ble_interface) :
+    BLEProcess(events::EventQueue &event_queue, BLE &ble_interface, char* endpoint) :
         _event_queue(event_queue),
         _ble_interface(ble_interface),
+        _endpoint(endpoint),
         _post_init_cb(){
     }
+    // BLEProcess(events::EventQueue &event_queue, BLE &ble_interface, char* endpoint) :
+    //     _event_queue(event_queue),
+    //     _ble_interface(ble_interface),
+    //     _post_init_cb(),
+    //     _endpoint(endpoint){
+    // }
 
     ~BLEProcess()
     {
@@ -86,7 +94,10 @@ private:
     int getIndex();
     char* getBuff();
     void wait();
+    //char* _endpoint;
+    char* _endpoint;
     events::EventQueue &_event_queue;
+    BLESDA* _blesda;
     BLE &_ble_interface;
     mbed::Callback<void(BLE&, events::EventQueue&)> _post_init_cb;
 };

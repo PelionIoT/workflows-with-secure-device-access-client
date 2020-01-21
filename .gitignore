@@ -1,9 +1,8 @@
-/BUILD
 /mbed-os
-/shields
-mbed_settings.pyc
-/mbed_settings.py
-.mbed
-mbed_cloud_client_user_config.h
+/mbed-cloud-client
 mbed_cloud_dev_credentials.c
-mbed_cloud_trust_anchor_credentials.c
+/shields
+/mbed_cloud_trust_anchor_credentials.c
+/mbed-cloud-client-platform-common
+/mbed_cloud_client_user_config.h
+.vscode

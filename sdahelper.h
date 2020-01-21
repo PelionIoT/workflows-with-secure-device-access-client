@@ -18,7 +18,6 @@
 // from inttypes.h in a C++ code.
 #ifndef __SDAHELPER_H__
 #define __SDAHELPER_H__
-#endif
 
 #include "mcc_common_setup.h"
 #include "sda_macros.h"
@@ -44,4 +43,5 @@ bool factory_setup(void);
 sda_status_e is_operation_permitted(sda_operation_ctx_h operation_context, const uint8_t *func_name, size_t func_name_size);
 sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_param);
 bool process_request_fetch_response(const uint8_t *request,uint32_t request_size,uint8_t *response,size_t response_max_size, size_t *response_actual_size);
-bool get_endpoint_name();
+char* get_endpoint_name();
+#endif

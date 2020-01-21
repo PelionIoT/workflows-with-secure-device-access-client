@@ -36,6 +36,8 @@
 
 using mbed::callback;
 
+#define TRACE_GROUP           "main"
+
 static int g_demo_main_status = EXIT_FAILURE;   // holds the demo main task return code
 
 bool success;
@@ -51,12 +53,19 @@ static void demo_main(){
         tr_error("Failed initializing mcc platform storage\n");
         return;
     }
-	printf("SDA Init successfull\r\n");
-    success = factory_setup();
 
-	printf("Factory setup complete\r\n");
+    // Avoid standard output buffering
+    setvbuf(stdout, (char *)NULL, _IONBF, 0);
+
+    success = factory_setup();
+    if (success != true) {
+        tr_error("Demo setup failed");
+        return;
+    }
+    char* endpoint = get_endpoint_name();
+    printf("Endpoint: %s", endpoint);
 	Comm_interface* comm_interface = new Comm_interface();
-	comm_interface->init();
+	comm_interface->init(endpoint);
 	comm_interface->start();
 }
 

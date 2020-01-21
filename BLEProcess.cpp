@@ -15,25 +15,20 @@
  */
 
 
+
+#include "BLEProcess.h"
 #include <stdint.h>
 #include <stdio.h>
-#include "BLEProcess.h"
+#include "events/EventQueue.h"
+#include "platform/Callback.h"
+#include "platform/NonCopyable.h"
+#include "ble/BLE.h"
+#include "ble/Gap.h"
+#include "ble/GapAdvertisingParams.h"
+#include "ble/GapAdvertisingData.h"
+#include "ble/FunctionPointerWithContext.h"
 
-/**
- * Handle initialization adn shutdown of the BLE Instance.
- *
- * Setup advertising payload and manage advertising state.
- * Delegate to GattClientProcess once the connection is established.
- */
-
-
-   /**
-     * Subscription to the ble interface initialization event.
-     *
-     * @param[in] cb The callback object that will be called when the ble
-     * interface is initialized.
-     */
-
+using namespace mbed;
 
 void BLEProcess::on_init(mbed::Callback<void(BLE&, events::EventQueue&)> cb)
 {
@@ -45,7 +40,6 @@ void BLEProcess::on_init(mbed::Callback<void(BLE&, events::EventQueue&)> cb)
  */
 bool BLEProcess::start()
 {
-    // print_mac_address();
     printf("Ble process started.\r\n");
 
     if (_ble_interface.hasInitialized()) {
@@ -104,7 +98,7 @@ void BLEProcess::when_init_complete(BLE::InitializationCompleteCallbackContext *
     Gap &gap = _ble_interface.gap();
     gap.onConnection(this, &BLEProcess::when_connection);
     gap.onDisconnection(this, &BLEProcess::when_disconnection);
-
+    _blesda = new BLESDA(_ble_interface, _endpoint);
     if (!set_advertising_parameters()) {
         return;
     }
@@ -172,13 +166,16 @@ bool BLEProcess::set_advertising_data()
 {
     Gap &gap = _ble_interface.gap();
 
+   // gap.accumulateAdvertisingPayload(GapAdvertisingData::COMPLETE_LIST_16BIT_SERVICE_IDS, EDDYSTONE_UUID, sizeof(EDDYSTONE_UUID));
+
     /* Use the simple builder to construct the payload; it fails at runtime
         * if there is not enough space left in the buffer */
     ble_error_t error = gap.setAdvertisingPayload(
         ble::LEGACY_ADVERTISING_HANDLE,
         ble::AdvertisingDataSimpleBuilder<ble::LEGACY_ADVERTISING_MAX_SIZE>()
             .setFlags()
-            .setName("BLE UART Example")
+            .setName("Heimdall")
+            .setLocalService(_blesda->getUUID())
             .getAdvertisingData()
     );
 

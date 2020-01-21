@@ -10,7 +10,6 @@ uint16_t BLESDA::getTXCharacteristicHandle() {
 uint16_t BLESDA::getRXCharacteristicHandle() {
     return rxCharacteristic.getValueAttribute().getHandle();
 }
-
 /**
  * We attempt to collect bytes before pushing them to the UART RX
  * characteristic; writing to the RX characteristic then generates
@@ -21,8 +20,7 @@ uint16_t BLESDA::getRXCharacteristicHandle() {
  * Collecting data into the sendBuffer buffer helps mitigate the rate of
  * updates. But we shouldn't buffer a large amount of data before updating
  * the characteristic, otherwise the client needs to turn around and make
- * a long read request; this is because notifications include only the first
- * 20 bytes of the updated data.
+ * a long read request; this is because notifications include of the updated data.
  *
  * @param  _buffer The received update.
  * @param  length Number of characters to be appended.
@@ -61,6 +59,7 @@ size_t BLESDA::writeString(const char *str) {
     return write(str, strlen(str));
 }
 
+
 void BLESDA::flush() {
     if (ble.getGapState().connected) {
         if (sendBufferIndex != 0) {
@@ -81,8 +80,13 @@ int BLESDA::_getc() {
     return receiveBuffer[receiveBufferIndex++];
 }
 
+void BLESDA::onDataRead(const GattReadCallbackParams *params){
+    printf("Data Read Request complete \r\n");
+}
+
 void BLESDA::onDataWritten(const GattWriteCallbackParams *params) {
-    printf("Inside On Data Written \r\n");
+    printf("Data Received \r\n");
+
     if (params->handle == getTXCharacteristicHandle()) {
         uint16_t bytesRead = params->len;
         if (bytesRead <= BLE_UART_SERVICE_MAX_DATA_LEN) {
@@ -90,7 +94,20 @@ void BLESDA::onDataWritten(const GattWriteCallbackParams *params) {
             receiveBufferIndex = 0;
             memcpy(receiveBuffer, params->data, numBytesReceived);
         }
-        _sda_interface->sdaProcess(receiveBuffer, bytesRead);
+        if(strncmp((const char*)receiveBuffer,"getEndpoint",numBytesReceived)==0){
+            writeString((char*)_endpointBuffer);
+            flush();
+            receiveBufferIndex=0;
+            memset(receiveBuffer,0,numBytesReceived);
+            return;
+        }
+        else{
+            writeString((char*)receiveBuffer);
+            flush();
+            receiveBufferIndex=0;
+            memset(receiveBuffer,0,numBytesReceived);
+        }
+        //_sda_interface->sdaProcess((uint8_t*)receiveBuffer, bytesRead);
     }
 }
 

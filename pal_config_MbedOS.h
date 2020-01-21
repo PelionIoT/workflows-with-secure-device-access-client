@@ -13,25 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ----------------------------------------------------------------------------
+#ifndef PAL_CONFIG_MBEDOS
+#define PAL_CONFIG_MBEDOS
 
-// Note: this macro is needed on armcc to get the the PRI*32 macros
-// from inttypes.h in a C++ code.
-#ifndef _COMM_INTERFACE_H_
-#define _COMM_INTERFACE_H_
-#include "blesda.h"
-#include "BLEProcess.h"
+#define PAL_USE_HW_ROT 0
+#define PAL_USE_HW_RTC 0
+#define PAL_USE_HW_TRNG 1
+#define PAL_SIMULATOR_FLASH_OVER_FILE_SYSTEM 0
+#define PAL_USE_INTERNAL_FLASH 0
+#define PAL_USE_SECURE_TIME 1
 
 
-class Comm_interface{
-    public:
-        Comm_interface(){
-        };
-        bool init(char* endpoint);
-        bool start();
-        bool finish();
-    private:
-        events::EventQueue _event_queue;
-        BLEProcess* _bleprocess;
-        bool _isconnected = false;
-};
-#endif
+#include "mbedOS_SST.h"
+
+
+#endif //PAL_CONFIG_MBEDOS
