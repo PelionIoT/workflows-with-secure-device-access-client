@@ -28,9 +28,11 @@ bool Comm_interface::init(char* endpoint){
     _bleprocess->on_init(NULL);
 	return true;
 }
-bool Comm_interface::start(){
+bool Comm_interface::start() {
     bool status = _bleprocess->start();
+    if(status) {
     _event_queue.dispatch_forever();
+    }
     return status;
 }
 

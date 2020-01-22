@@ -20,6 +20,7 @@
 #include "ble/BLE.h"
 #include "ble/pal/Deprecated.h"
 #include "sda_interface.h"
+#include "protocoltranslator.h"
 
 const uint8_t  UARTServiceBaseUUID[UUID::LENGTH_OF_LONG_UUID] = {
     0x6E, 0x40, 0x00, 0x00, 0xB5, 0xA3, 0xF3, 0x93,
@@ -171,6 +172,7 @@ private:
     GattCharacteristic  rxCharacteristic; /**< From the point of view of the external client, this is the characteristic
                                            *   they'd read from in order to receive the bytes transmitted by this
                                            *   application. */
+    ProtocolTranslator* _protocoltranslator;
 };
 #endif
 

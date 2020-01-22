@@ -1,5 +1,6 @@
 #include "blesda.h"
 
+
 uint16_t BLESDA::getTXCharacteristicHandle() {
     return txCharacteristic.getValueAttribute().getHandle();
 }
@@ -107,7 +108,8 @@ void BLESDA::onDataWritten(const GattWriteCallbackParams *params) {
             receiveBufferIndex=0;
             memset(receiveBuffer,0,numBytesReceived);
         }
-        //_sda_interface->sdaProcess((uint8_t*)receiveBuffer, bytesRead);
+        _protocoltranslator = new ProtocolTranslator(receiveBuffer);
+        _protocoltranslator->init();
     }
 }
 

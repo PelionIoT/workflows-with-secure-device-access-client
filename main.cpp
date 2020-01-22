@@ -63,10 +63,16 @@ static void demo_main(){
         return;
     }
     char* endpoint = get_endpoint_name();
-    printf("Endpoint: %s", endpoint);
+    tr_info("Endpoint: %s", endpoint);
 	Comm_interface* comm_interface = new Comm_interface();
+    if(comm_interface == NULL){
+        tr_error("Can not initiate ble interface");
+        return;
+    }
 	comm_interface->init(endpoint);
-	comm_interface->start();
+	if(comm_interface->start() == false){
+        tr_error("Can not start ble Advertisement");
+    }
 }
 
 int main(void) {
