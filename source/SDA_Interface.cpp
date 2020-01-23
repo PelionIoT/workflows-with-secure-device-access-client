@@ -16,9 +16,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "sdahelper.h"
 #include "sda_interface.h"
-#include "sda_demo.h"
+#include "include/sda_demo.h"
+#include "include/sdahelper.h"
+
 #define TRACE_GROUP           "sdaI"
 
 

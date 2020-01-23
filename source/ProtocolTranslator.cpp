@@ -1,8 +1,9 @@
-#include "protocoltranslator.h"
+#include "include/protocoltranslator.h"
 #include "mbed-trace/mbed_trace.h"
-
+#include "pv_endian.h"
 
 #define TRACE_GROUP "PT"
+
 size_t ProtocolTranslator::_read(uint8_t* message, size_t message_size){
     if(memcpy(message, &_buffer[_index],message_size)==NULL){
         mbed_tracef(TRACE_ACTIVE_LEVEL_ERROR, TRACE_GROUP,"Can not read message");
@@ -18,27 +19,26 @@ size_t ProtocolTranslator::_write(uint8_t* message, size_t message_size){
 
 bool ProtocolTranslator::is_token_detected(){
     for(int i = 0; i< FTCD_MSG_HEADER_TOKEN_SIZE_BYTES; i++){
-        printf("Buffer: %d Header: %d\r\n", _buffer[i], _message_header[i]);
         if(_buffer[i]!=_message_header[i]){
             return false;
         }
-        _index +=FTCD_MSG_HEADER_TOKEN_SIZE_BYTES;
-        return true;
     }
+     _index +=FTCD_MSG_HEADER_TOKEN_SIZE_BYTES;
+        return true;
 }
 
 uint32_t ProtocolTranslator::read_message_size(){
-    uint32_t message_size = 0;
-    size_t read_chars = _read(reinterpret_cast<uint8_t*>(&message_size), sizeof(message_size));
-    if (read_chars != sizeof(message_size)) {
-        mbed_tracef(TRACE_LEVEL_CMD, TRACE_GROUP, "Failed reading message size (read %d bytes out of %d)", read_chars, sizeof(message_size));
-        return 0;
-    }
-    return read_chars;
+    uint32_t message_size = (_buffer[_index]<<24)+
+                            (_buffer[++_index]<<16)+
+                            (_buffer[++_index]<<8)+
+                            _buffer[++_index];
+    mbed_tracef(TRACE_ACTIVE_LEVEL_INFO,TRACE_GROUP, "Index of buffer - %d, message size: %d ",_index,message_size);
+    return message_size;
 }
-
+// this is just for test..Similar data comes from SDA. As we haven;t implemented the protocol over BLE yet..I am testing the code
+// hardcoding the similar buffer that comes from SDA.
 void ProtocolTranslator::init(){
-    uint8_t request[493] = {0x6d, 0x62, 0x65, 0x64, 0x64, 0x62, 0x61, 0x70,130, 3, 89,1, 224, 210, 132, 67, 161, 1, 38, 160, 89, 1, 148, 131, 27, 227, 112,
+    uint8_t request[497] = {0x6d, 0x62, 0x65, 0x64, 0x64, 0x62, 0x61, 0x70,0,0,1,229,130, 3, 89,1, 224, 210, 132, 67, 161, 1, 38, 160, 89, 1, 148, 131, 27, 227, 112,
     189, 255, 182, 146, 168, 85, 131, 1, 105, 99, 111, 110, 102, 105, 103, 117,114, 101, 129, 101, 104, 101, 108, 108, 111, 89, 1, 116, 216, 61,  210, 132,
     67, 161, 1, 38, 160, 89, 1, 38, 169, 12, 120, 26, 114, 101, 97, 100, 45, 100, 97, 116, 97, 32, 99, 111, 110, 102, 105, 103 ,117 ,114, 101, 32,117,112,
     100, 97, 116, 101, 24, 25, 161, 1, 164, 1, 2, 32, 1, 33, 88, 32, 136, 22, 235, 120, 187, 220, 214, 6, 53, 211, 254, 166, 251, 242, 121, 194, 13  ,71,
@@ -61,4 +61,8 @@ void ProtocolTranslator::init(){
     else {
     printf("Token is detected\r\n");
     }
+    uint32_t message_size = read_message_size();
+
+    mbed_tracef(TRACE_ACTIVE_LEVEL_INFO,TRACE_GROUP, "message size: %d",message_size);
+
 }

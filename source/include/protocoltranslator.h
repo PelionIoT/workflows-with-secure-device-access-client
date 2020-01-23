@@ -8,7 +8,7 @@
 class ProtocolTranslator{
     public:
         ProtocolTranslator(uint8_t* request):
-        _message_header(FTCD_MSG_HEADER_TOKEN_SDA) {};
+        _message_header(FTCD_MSG_HEADER_TOKEN_SDA),_index(0) {};
         void init();
         bool is_token_detected();
         uint32_t read_message_size();
@@ -21,7 +21,6 @@ class ProtocolTranslator{
         size_t _write(uint8_t* buffer, size_t message_size);
         uint8_t* _buffer;
         uint8_t _message_header[FTCD_MSG_HEADER_TOKEN_SIZE_BYTES];
-        //BLESDA& _blesdahandler;
         bool _use_signature;
 };
 

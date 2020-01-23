@@ -16,9 +16,9 @@
 
 // Note: this macro is needed on armcc to get the the PRI*32 macros
 // from inttypes.h in a C++ code.
-#include "comm_interface.h"
 #include "events/EventQueue.h"
-#include "BLEProcess.h"
+#include "include/BLEProcess.h"
+#include "include/comm_interface.h"
 
 #define TRACE_GROUP           "comm"
 

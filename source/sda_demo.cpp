@@ -16,7 +16,7 @@
 
 #ifndef SDAE_INTERNAL_DEMO
 
-#include "sda_demo.h"
+#include "include/sda_demo.h"
 #include "mbed.h"
 #include "PinNames.h"
 #include "mbed-trace/mbed_trace.h"

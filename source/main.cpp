@@ -21,7 +21,6 @@
 #include "events/EventQueue.h"
 #include "platform/Callback.h"
 #include "platform/NonCopyable.h"
-#include "BLEProcess.h"
 #include "ble/BLE.h"
 #include "ble/Gap.h"
 #include "ble/GapAdvertisingParams.h"
@@ -30,8 +29,9 @@
 #include "mbed-trace-helper.h"
 #include "mbed_stats_helper.h"
 #include "string"
-#include "comm_interface.h"
-#include "sdahelper.h"
+#include "include/BLEProcess.h"
+#include "include/comm_interface.h"
+#include "include/sdahelper.h"
 
 
 using mbed::callback;
