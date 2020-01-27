@@ -22,6 +22,8 @@
 #include "sda_interface.h"
 #include "protocoltranslator.h"
 
+
+
 const uint8_t  UARTServiceBaseUUID[UUID::LENGTH_OF_LONG_UUID] = {
     0x6E, 0x40, 0x00, 0x00, 0xB5, 0xA3, 0xF3, 0x93,
     0xE0, 0xA9, 0xE5, 0x0E, 0x24, 0xDC, 0xCA, 0x9E,
@@ -147,23 +149,25 @@ public:
     This callback allows the connecting device to fetch the endpoint of the device so that it can proceed further.
     */
     void onDataRead(const GattReadCallbackParams *params);
+    uint8_t* processBuffer(uint8_t* buffer);    // Understand the buffer that comes from BLE according to BLEP Protocol.
 
 
 private:
     BLE                &ble;
 
-    uint8_t             receiveBuffer[BLE_UART_SERVICE_MAX_DATA_LEN]; /**< The local buffer into which we receive
+    uint8_t             receiveBuffer[BLE_UART_SERVICE_MAX_DATA_LEN]; /** The local buffer into which we receive
                                                                        *   inbound data before forwarding it to the
                                                                        *   application.     */
 
-    uint8_t             sendBuffer[BLE_UART_SERVICE_MAX_DATA_LEN];    /**< The local buffer into which outbound data is
+    uint8_t             sendBuffer[BLE_UART_SERVICE_MAX_DATA_LEN];    /** The local buffer into which outbound data is
                                                                        *   accumulated before being pushed to the
                                                                        *   rxCharacteristic. */
-    char*             _endpointBuffer;                                /*The local buffer that contains the endpoint of
+    char*                _endpointBuffer;                                /*The local buffer that contains the endpoint of
                                                                          the device.       */
     uint8_t              sendBufferIndex;
     uint8_t              numBytesReceived;
     uint8_t              receiveBufferIndex;
+    uint8_t*             _protocol_buffer;                              //Buffer that stores the data.
 
     SDAInterface*       _sda_interface;   /*Interface that communicates with SDA */
 

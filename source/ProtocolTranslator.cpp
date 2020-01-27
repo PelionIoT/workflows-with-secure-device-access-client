@@ -35,9 +35,22 @@ uint32_t ProtocolTranslator::read_message_size(){
     mbed_tracef(TRACE_ACTIVE_LEVEL_INFO,TRACE_GROUP, "Index of buffer - %d, message size: %d ",_index,message_size);
     return message_size;
 }
+// read message which goes to SDA.
+bool ProtocolTranslator::read_message(uint8_t* message, uint32_t message_size){
+    int result = (int)memcpy(message,&_buffer[_index], message_size);
+    if(result !=NULL){
+        return true;
+    }
+    return false;
+    _index+=message_size;
+}
+bool ProtocolTranslator::read_message_signature(uint8_t* sig, size_t req_size){
+    // this function will read the message signature coming from the request.
+}
 // this is just for test..Similar data comes from SDA. As we haven;t implemented the protocol over BLE yet..I am testing the code
 // hardcoding the similar buffer that comes from SDA.
 void ProtocolTranslator::init(){
+    // driver function right now
     uint8_t request[497] = {0x6d, 0x62, 0x65, 0x64, 0x64, 0x62, 0x61, 0x70,0,0,1,229,130, 3, 89,1, 224, 210, 132, 67, 161, 1, 38, 160, 89, 1, 148, 131, 27, 227, 112,
     189, 255, 182, 146, 168, 85, 131, 1, 105, 99, 111, 110, 102, 105, 103, 117,114, 101, 129, 101, 104, 101, 108, 108, 111, 89, 1, 116, 216, 61,  210, 132,
     67, 161, 1, 38, 160, 89, 1, 38, 169, 12, 120, 26, 114, 101, 97, 100, 45, 100, 97, 116, 97, 32, 99, 111, 110, 102, 105, 103 ,117 ,114, 101, 32,117,112,
@@ -65,4 +78,8 @@ void ProtocolTranslator::init(){
 
     mbed_tracef(TRACE_ACTIVE_LEVEL_INFO,TRACE_GROUP, "message size: %d",message_size);
 
+    uint8_t* msg = (uint8_t*)malloc(message_size);
+    if(read_message(msg,size_t(message_size))) {
+        printf("message recieved");
+    }
 }

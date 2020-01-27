@@ -85,6 +85,20 @@ void BLESDA::onDataRead(const GattReadCallbackParams *params){
     printf("Data Read Request complete \r\n");
 }
 
+//function that process buffer acorfding to BLEP protocol
+uint8_t* BLESDA::processBuffer(uint8_t* buffer) {
+    const uint8_t start_data = 15;
+    uint8_t s_num = buffer[0];   // Serial num
+    uint8_t c_frame = buffer[1]; // Control byte, it has two fields, higher octet represents MF(More Fragment) bit and
+                                 // lower bit represents fragment number.
+    uint16_t req_size = buffer[2] << 16+buffer[3]; // right now it's two bytes but it will increase more fields, it should be 4 bytes.
+    uint8_t* req = (uint8_t*)malloc(req_size);
+
+    for(uint8_t i =  start_data; i < req_size; i++){
+        req[i-start_data]=buffer[i];
+    }
+
+}
 void BLESDA::onDataWritten(const GattWriteCallbackParams *params) {
     printf("Data Received \r\n");
 

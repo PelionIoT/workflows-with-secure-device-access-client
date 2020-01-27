@@ -32,7 +32,8 @@
 #include "include/BLEProcess.h"
 #include "include/comm_interface.h"
 #include "include/sdahelper.h"
-
+#include "BlockDevice.h"
+#include "LittleFileSystem.h"
 
 using mbed::callback;
 
@@ -76,6 +77,8 @@ static void demo_main(){
 }
 
 int main(void) {
+
+     printf("Startup\r\n");
 	success = mbed_trace_helper_init(TRACE_ACTIVE_LEVEL_ALL | TRACE_MODE_COLOR, false);
     if (!success) {
         return EXIT_FAILURE;
