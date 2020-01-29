@@ -41,7 +41,6 @@ using mbed::callback;
 
 static int g_demo_main_status = EXIT_FAILURE;   // holds the demo main task return code
 
-bool success;
 
 static void demo_main(){
 	mcc_platform_sw_build_info();
@@ -49,7 +48,7 @@ static void demo_main(){
     tr_cmdline("Secure-Device-Access initialization");
 
     // Initialize storage
-    success = mcc_platform_storage_init() == 0;
+    bool success = mcc_platform_storage_init() == 0;
     if (success != true) {
         tr_error("Failed initializing mcc platform storage\n");
         return;
@@ -77,9 +76,9 @@ static void demo_main(){
 }
 
 int main(void) {
-
-     printf("Startup\r\n");
-	success = mbed_trace_helper_init(TRACE_ACTIVE_LEVEL_ALL | TRACE_MODE_COLOR, false);
+    
+    printf("Startup\r\n");
+	bool success = mbed_trace_helper_init(TRACE_ACTIVE_LEVEL_ALL | TRACE_MODE_COLOR, false);
     if (!success) {
         return EXIT_FAILURE;
     }

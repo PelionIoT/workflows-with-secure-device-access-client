@@ -1,3 +1,19 @@
+/* mbed Microcontroller Library
+ * Copyright (c) 2006-2013 ARM Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "include/blesda.h"
 
 
@@ -81,23 +97,25 @@ int BLESDA::_getc() {
     return receiveBuffer[receiveBufferIndex++];
 }
 
-void BLESDA::onDataRead(const GattReadCallbackParams *params){
-    printf("Data Read Request complete \r\n");
+//function that process buffer according to BLEP protocol
+
+bool BLESDA::processBuffer(BLEBuff* buff){
+    
+    uint8_t* request = (uint8_t*)malloc(_total_req_size*sizeof(uint8_t));
+
 }
 
-//function that process buffer acorfding to BLEP protocol
-uint8_t* BLESDA::processBuffer(uint8_t* buffer) {
-    const uint8_t start_data = 15;
-    uint8_t s_num = buffer[0];   // Serial num
-    uint8_t c_frame = buffer[1]; // Control byte, it has two fields, higher octet represents MF(More Fragment) bit and
-                                 // lower bit represents fragment number.
-    uint16_t req_size = buffer[2] << 16+buffer[3]; // right now it's two bytes but it will increase more fields, it should be 4 bytes.
-    uint8_t* req = (uint8_t*)malloc(req_size);
-
-    for(uint8_t i =  start_data; i < req_size; i++){
-        req[i-start_data]=buffer[i];
+bool BLESDA::processInputBuffer(uint8_t* msg_in) {
+    BLEBuff* buffer = new (BLEBuff*);
+    buffer->s_num = msg_in[SERIAL_NUM_INDEX];
+    buffer->cf.fn=msg_in[CONTROL_FRAME_INDEX]&0x0F;
+    buffer->cf.mf = msg_in[CONTROL_FRAME_INDEX]&0xF0;
+    buffer->len = msg_in[PACKET_LEN];
+    if(buffer->s_num == 1 ){
+        _total_req_size = msg_in[UPPER_BYTE_REQ_INDEX]<<8 + msg_in[LOWER_BYTE_REQ_INDEX];
     }
-
+    buffer->data = (uint8_t*)malloc((buffer->len*sizeof(uint8_t)));
+    memcpy(buffer->data, &msg_in[START_DATA_BYTE],buffer->len*sizeof(uint8_t));
 }
 void BLESDA::onDataWritten(const GattWriteCallbackParams *params) {
     printf("Data Received \r\n");
@@ -109,6 +127,7 @@ void BLESDA::onDataWritten(const GattWriteCallbackParams *params) {
             receiveBufferIndex = 0;
             memcpy(receiveBuffer, params->data, numBytesReceived);
         }
+        processInputBuffer(receiveBuffer);
         if(strncmp((const char*)receiveBuffer,"getEndpoint",numBytesReceived)==0){
             writeString((char*)_endpointBuffer);
             flush();
@@ -122,8 +141,6 @@ void BLESDA::onDataWritten(const GattWriteCallbackParams *params) {
             receiveBufferIndex=0;
             memset(receiveBuffer,0,numBytesReceived);
         }
-        _protocoltranslator = new ProtocolTranslator(receiveBuffer);
-        _protocoltranslator->init();
     }
 }
 

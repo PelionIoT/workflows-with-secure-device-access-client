@@ -1,3 +1,19 @@
+/* mbed Microcontroller Library
+ * Copyright (c) 2006-2013 ARM Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "include/protocoltranslator.h"
 #include "mbed-trace/mbed_trace.h"
 #include "pv_endian.h"
@@ -41,8 +57,8 @@ bool ProtocolTranslator::read_message(uint8_t* message, uint32_t message_size){
     if(result !=NULL){
         return true;
     }
-    return false;
     _index+=message_size;
+    return false;
 }
 bool ProtocolTranslator::read_message_signature(uint8_t* sig, size_t req_size){
     // this function will read the message signature coming from the request.
@@ -51,9 +67,9 @@ bool ProtocolTranslator::read_message_signature(uint8_t* sig, size_t req_size){
 // hardcoding the similar buffer that comes from SDA.
 void ProtocolTranslator::init(){
     // driver function right now
-    uint8_t request[497] = {0x6d, 0x62, 0x65, 0x64, 0x64, 0x62, 0x61, 0x70,0,0,1,229,130, 3, 89,1, 224, 210, 132, 67, 161, 1, 38, 160, 89, 1, 148, 131, 27, 227, 112,
-    189, 255, 182, 146, 168, 85, 131, 1, 105, 99, 111, 110, 102, 105, 103, 117,114, 101, 129, 101, 104, 101, 108, 108, 111, 89, 1, 116, 216, 61,  210, 132,
-    67, 161, 1, 38, 160, 89, 1, 38, 169, 12, 120, 26, 114, 101, 97, 100, 45, 100, 97, 116, 97, 32, 99, 111, 110, 102, 105, 103 ,117 ,114, 101, 32,117,112,
+    uint8_t request[497] = {0x6d, 0x62, 0x65, 0x64, 0x64, 0x62, 0x61, 0x70,0,0,1,229,130, 3, 89,1, 224, 210, 132, 67, 161, 1, 38, 160, 89, 1, 148, 131, 27,
+    227, 112,189, 255, 182, 146, 168, 85, 131, 1, 105, 99, 111, 110, 102, 105, 103, 117,114, 101, 129, 101, 104, 101, 108, 108, 111, 89, 1, 116, 216, 61, 210,
+    132,67, 161, 1, 38, 160, 89, 1, 38, 169, 12, 120, 26, 114, 101, 97, 100, 45, 100, 97, 116, 97, 32, 99, 111, 110, 102, 105, 103 ,117 ,114, 101, 32,117,112,
     100, 97, 116, 101, 24, 25, 161, 1, 164, 1, 2, 32, 1, 33, 88, 32, 136, 22, 235, 120, 187, 220, 214, 6, 53, 211, 254, 166, 251, 242, 121, 194, 13  ,71,
     100, 224, 151, 3 ,128, 151, 244, 76 ,155, 221, 139, 98, 3, 142, 34, 88, 32, 241, 37, 253, 184, 167, 134, 42, 158, 108, 129, 168, 33, 95, 117, 236, 226,
     87, 130, 148, 180, 147, 22, 249, 62, 99, 239, 230, 114, 82, 86, 183, 147, 2, 120, 32, 48, 49, 54, 97, 101, 52, 57, 97, 102, 98, 54, 51, 57, 50, 52 ,54,
@@ -80,6 +96,6 @@ void ProtocolTranslator::init(){
 
     uint8_t* msg = (uint8_t*)malloc(message_size);
     if(read_message(msg,size_t(message_size))) {
-        printf("message recieved");
+        printf("message received");
     }
 }
