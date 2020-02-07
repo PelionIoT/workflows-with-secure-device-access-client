@@ -98,7 +98,7 @@ void BLEProcess::when_init_complete(BLE::InitializationCompleteCallbackContext *
     Gap &gap = _ble_interface.gap();
     gap.onConnection(this, &BLEProcess::when_connection);
     gap.onDisconnection(this, &BLEProcess::when_disconnection);
-    _blesda = new BLESDA(_ble_interface, _endpoint);
+    _blesda = new BLESDA(_event_queue,_ble_interface, _endpoint);
     if (!set_advertising_parameters()) {
         return;
     }

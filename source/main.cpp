@@ -15,9 +15,8 @@
  */
 
 #include <stdio.h>
-#include "mbed_cloud_client_user_config.h"
 #include <stdint.h>
-#include <stdio.h>
+#include "mbed_cloud_client_user_config.h"
 #include "events/EventQueue.h"
 #include "platform/Callback.h"
 #include "platform/NonCopyable.h"
@@ -28,7 +27,7 @@
 #include "mbed-trace/mbed_trace.h"
 #include "mbed-trace-helper.h"
 #include "mbed_stats_helper.h"
-#include "string"
+#include <string>
 #include "include/BLEProcess.h"
 #include "include/comm_interface.h"
 #include "include/sdahelper.h"
@@ -63,7 +62,13 @@ static void demo_main(){
         return;
     }
     char* endpoint = get_endpoint_name();
-    tr_info("Endpoint: %s", endpoint);
+    printf("Endpoint: %s", endpoint);
+    sda_status_e sda_status = sda_init();
+    if (sda_status != SDA_STATUS_SUCCESS) {
+        tr_error("Failed initializing Secure-Device-Access");
+        display_faulty_message("Init. failed");
+    }
+
 	Comm_interface* comm_interface = new Comm_interface();
     if(comm_interface == NULL){
         tr_error("Can not initiate ble interface");
@@ -76,7 +81,7 @@ static void demo_main(){
 }
 
 int main(void) {
-    
+
     printf("Startup\r\n");
 	bool success = mbed_trace_helper_init(TRACE_ACTIVE_LEVEL_ALL | TRACE_MODE_COLOR, false);
     if (!success) {
