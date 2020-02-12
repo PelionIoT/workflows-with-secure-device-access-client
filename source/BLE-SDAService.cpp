@@ -82,11 +82,11 @@ int BLESDA::_getc() {
     return receiveBuffer[receiveBufferIndex++];
 }
 
-blep_err_code BLESDA::BLEHeaderTX(_sda_over_ble_header* header, uint8_t len){
+PTErr BLESDA::BLEHeaderTX(_sda_over_ble_header* header, uint8_t len){
     printf("SeqNum - %d type - %d MF - %d Fragment Num - %d frag_length - %d total size %ld first length %d second length %d  \r\n", header->seq_num,
     header->type, header->more_frag, header->frag_num, header->frag_length,header->length, header->length & 0xff00 >> 8,header->length & 0x00ff);
-
-    uint8_t* msg = (uint8_t*)malloc(len+8);
+    uint8_t transmit_data_len = len+START_DATA_BYTE;
+    uint8_t* msg = (uint8_t*)malloc(transmit_data_len);
     msg[0] = header->seq_num;
     msg[1] = (header->type|(header->more_frag<<2)|(header->frag_num<<3));
     msg[2] = (header->length & 0xff00) >> 8;
@@ -94,15 +94,18 @@ blep_err_code BLESDA::BLEHeaderTX(_sda_over_ble_header* header, uint8_t len){
     msg[4] = header->frag_length;
     memcpy(&msg[8], header->payload, len);
     printf("---------Header----------\r\n");
-    printf("Transmitting data to BLE - %d\r\n",len);
-    write(msg, len);
+    printf("Transmitting data to BLE - %d\r\n",transmit_data_len);
+    write(msg, transmit_data_len);
     flush();
     printf("\r\n");
+    if(msg){
+        free(msg);
+    }
 }
 
 
 //function that process buffer according to BLEP protocol
-blep_err_code BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize)
+PTErr BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize)
 {
     uint8_t fragmentStartOffset=0;
     uint8_t frag_num=0;
@@ -113,6 +116,7 @@ blep_err_code BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_t paylo
     {
         sda_over_ble_header frag_sda ={0};
         frag_sda.seq_num = g_seqnum;
+        g_seqnum = g_seqnum+1;
         frag_sda.type = SDA_DATA;
         frag_sda.more_frag = (num_frag==1)?0:1;
         frag_sda.frag_num=(++frag_num);
@@ -130,7 +134,10 @@ blep_err_code BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_t paylo
             fragmentStartOffset+=BLE_MTU_SIZE;
         }
     //Transmit it to BLE
-    BLEHeaderTX(&frag_sda, payloadsize);
+    PTErr status = BLEHeaderTX(&frag_sda, payloadsize);
+    if(status != PT_ERR_OK){
+        return status;
+    }
     payloadsize -= BLE_MTU_SIZE;
     //Wait for Tx Done
     //free allocated memory
@@ -141,41 +148,43 @@ blep_err_code BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_t paylo
     num_frag--;
     printf("Num frag %d\r\n",num_frag);
     }
+    return PT_ERR_OK;
     //free(sda_payload);
  }
-blep_err_code BLESDA::ProcessBuffer(sda_over_ble_header* frag_sda, uint16_t len){
-    //write(frag_sda->payload, frag_sda->frag_length);
+PTErr BLESDA::ProcessBuffer(sda_over_ble_header* frag_sda){
     printf("Processing buffer\r\n");
     uint8_t* msg_to_sda;
     uint8_t* response = (uint8_t*)malloc(60*sizeof(uint8_t));
     uint8_t response_size = 60;
     uint16_t sda_response_size=0;
     if(frag_sda->frag_num == 1){
-        msg_to_sda = (uint8_t*)malloc(len*sizeof(uint8_t));
+        msg_to_sda = (uint8_t*)malloc(frag_sda->frag_length*sizeof(uint8_t));
     }
+    memcpy(&msg_to_sda[_index],frag_sda->payload, frag_sda->frag_length);
+
     if(frag_sda->more_frag == 1){
-        memcpy(&msg_to_sda[_index],frag_sda->payload, frag_sda->frag_length);
        _index +=frag_sda->frag_length;
     }
     else{
         printf("Sending buffer\r\n");
-        memcpy(&(msg_to_sda[_index]),frag_sda->payload, frag_sda->frag_length);
         for(int i = 0 ; i < frag_sda->frag_length;i++)
             printf("%d ",msg_to_sda[i]);
         ProtocolTranslator* protocoltranslator = new ProtocolTranslator(msg_to_sda);
-        _event_queue.call(callback(protocoltranslator, &ProtocolTranslator::init),response,response_size,&sda_response_size);
-        //protocoltranslator->init(response,response_size,&sda_response_size);
-        //write(response,sda_response_size);
-        sda_fragment_datagram(response, sda_response_size);
+        if(protocoltranslator->init(response,response_size,&sda_response_size)!=PT_ERR_OK){
+            return PT_ERR_PROCESS_REQ;
+        }
+        delete protocoltranslator;
+        return sda_fragment_datagram(response, sda_response_size);
         _index = 0;
     }
-    free(response);
+    if(response){
+        free(response);
+    }
 }
-blep_err_code BLESDA::processInputBuffer(uint8_t* msg_in) {
-   // writeString("Input Processs Buff");
-    //flush();
-    if(msg_in == NULL)
-        return ERR_MSG_NULL;
+PTErr BLESDA::processInputBuffer(uint8_t* msg_in) {
+    if(msg_in == NULL) {
+        return PT_ERR_EMPTY_MSG;
+    }
     sda_over_ble_header buffer;
     buffer.seq_num = msg_in[0];
     buffer.type = (msg_in[1] & 0x03);
@@ -186,7 +195,7 @@ blep_err_code BLESDA::processInputBuffer(uint8_t* msg_in) {
     uint16_t total_req_size = buffer.length;
     buffer.payload = (uint8_t*)malloc(buffer.frag_length);
     memcpy(buffer.payload, &msg_in[8],buffer.frag_length);
-    ProcessBuffer(&buffer, buffer.length);
+    return ProcessBuffer(&buffer);
 }
 void BLESDA::onDataWritten(const GattWriteCallbackParams *params) {
     printf("Data Received \r\n");

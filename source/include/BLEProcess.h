@@ -51,13 +51,6 @@ public:
         _endpoint(endpoint),
         _post_init_cb(){
     }
-    // BLEProcess(events::EventQueue &event_queue, BLE &ble_interface, char* endpoint) :
-    //     _event_queue(event_queue),
-    //     _ble_interface(ble_interface),
-    //     _post_init_cb(),
-    //     _endpoint(endpoint){
-    // }
-
     ~BLEProcess()
     {
         stop();

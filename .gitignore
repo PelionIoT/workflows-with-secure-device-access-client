@@ -1,8 +1,8 @@
-/mbed-os
-/mbed-cloud-client
+BUILD
 mbed_cloud_dev_credentials.c
-/shields
-/mbed_cloud_trust_anchor_credentials.c
-/mbed-cloud-client-platform-common
-/mbed_cloud_client_user_config.h
-.vscode
+shields
+mbed_cloud_trust_anchor_credentials.c
+mbed-os
+mbed_cloud_client_user_config.h
+mbed-cloud-client-platform-common
+mbed-cloud-client

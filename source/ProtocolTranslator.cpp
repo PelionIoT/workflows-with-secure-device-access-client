@@ -63,20 +63,13 @@ PTErr ProtocolTranslator::read_message(uint8_t* message, uint32_t message_size){
     return PT_ERR_OK;
 }
 PTErr ProtocolTranslator::read_message_signature(uint8_t* sig, size_t req_size){
-    if(memcpy(sig, &_buffer[HEADER_SIZE+_message_size], req_size) == NULL){
+    if(memcpy(sig, &_buffer[HEADER_BYTE+_message_size], req_size) == NULL){
         return PT_ERR_MSG_SIG;
     }
     return PT_ERR_OK;
 }
 
 PTErr ProtocolTranslator::init(uint8_t* response, uint8_t response_max_size, uint16_t* response_size){
-    // driver function right now
-    // uint8_t request[48] = {109, 98, 101, 100, 100, 98, 97, 112, 0, 0, 0, 2, 129, 1, 172, 56, 120, 63, 106, 59, 47, 227, 181, 121, 113, 141,
-    //                         107, 168, 73, 58, 69, 109, 128, 6, 101, 178, 67, 58, 14, 124, 130, 60, 255, 144, 166, 3};
-
-    // _buffer = request;
-    // uint8_t* request = _buffer;
-   // size_t response_max_size = sizeof(response);
     printf("Response maxsize %ld\r\n",response_max_size);
     size_t response_actual_size;
     printf("In PT\r\n");

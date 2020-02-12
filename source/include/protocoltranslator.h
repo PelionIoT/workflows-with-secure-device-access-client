@@ -22,7 +22,7 @@
 #define FTCD_MSG_HEADER_TOKEN_SIZE_BYTES 8
 
 #define HEADER_START            0
-#define HEADER_SIZE             11
+#define HEADER_BYTE             11
 #define START_DATA              12
 enum PTErr{
     PT_ERR_OK,
@@ -32,6 +32,8 @@ enum PTErr{
     PT_COMM_FAILED_TO_CALCULATE_MESSAGE_SIGNATURE,
     PT_COMM_INCONSISTENT_MESSAGE_SIGNATURE,
     PT_ERR_PROCESS_REQ,
+    PT_ERR_EMPTY_MSG,
+    PT_ERR_NOT_INIT
 };
 class ProtocolTranslator{
     public:

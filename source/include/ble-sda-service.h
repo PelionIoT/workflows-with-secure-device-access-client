@@ -15,12 +15,12 @@
  */
 #ifndef _BLE_SDA_SERVICE_H_
 #define _BLE_SDA_SERVICE_H_
+
 #include "events/EventQueue.h"
 #include "ble/UUID.h"
 #include "ble/BLE.h"
 #include "ble/pal/Deprecated.h"
 #include "protocoltranslator.h"
-#include "mbed.h"
 
 #define SERIAL_NUM_INDEX        0
 #define CONTROL_FRAME_INDEX     1
@@ -31,6 +31,7 @@
 #define BLE_MTU_SIZE  240
 #define SDA_DATA    1
 #define SDA_ACK 2
+
 enum blep_err_code{
     ERR_OK,
     ERR_RESEND_REQ,
@@ -38,6 +39,7 @@ enum blep_err_code{
     ERR_MSG_NULL,
     ERR_MEMORY_OVERFLOW,
 };
+
 typedef struct _sda_over_ble_header {
 	 /* Frame sequence number(1byte) */
 	uint8_t seq_num;
@@ -127,7 +129,7 @@ public:
     const uint8_t* getUUID(){
         return UARTServiceUUID;
     }
-    PTErr BLEHeaderTX(sda_over_ble_header* header, uint8_t len);
+    blep_err_code BLEHeaderTX(sda_over_ble_header* header, uint8_t len);
     /**
      * We attempt to collect bytes before pushing them to the UART RX
      * characteristic; writing to the RX characteristic then generates
@@ -183,13 +185,10 @@ public:
     This callback allows the connecting device to fetch the endpoint of the device so that it can proceed further.
     */
     void onDataRead(const GattReadCallbackParams *params);
-    PTErr ProcessBuffer(sda_over_ble_header* frag_sda);
-    PTErr sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize);
-    PTErr processInputBuffer(uint8_t* msg_in);
-
+    blep_err_code ProcessBuffer(sda_over_ble_header* frag_sda, uint16_t len);
+    blep_err_code sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize);
+    blep_err_code processInputBuffer(uint8_t* msg_in);
 private:
-    Thread t;
-
     BLE                 &ble;                                           //BLe instance
     uint16_t             _index;
     uint8_t              receiveBuffer[BLE_UART_SERVICE_MAX_DATA_LEN]; /**   The local buffer into which we receive

@@ -18,9 +18,9 @@
 // from inttypes.h in a C++ code.
 #ifndef _COMM_INTERFACE_H_
 #define _COMM_INTERFACE_H_
+
 #include "blesda.h"
 #include "BLEProcess.h"
-
 
 class Comm_interface{
     public:
