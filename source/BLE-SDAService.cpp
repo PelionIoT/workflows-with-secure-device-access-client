@@ -15,9 +15,10 @@
  */
 #include "include/blesda.h"
 using mbed::callback;
+#define TRACE_GROUP "ble"
 
 
-uint8_t request[54] = {0,SDA_DATA|0<<3|1<<4,46,0,46,0,0,0,109, 98, 101, 100, 100, 98, 97, 112, 0, 0, 0, 2, 129, 1, 172, 56, 120, 63, 106, 59, 47, 227, 181, 121, 113, 141,
+uint8_t request[54] = {0,SDA_DATA|0<<2|1<<3,46,0,46,0,0,0,109, 98, 101, 100, 100, 98, 97, 112, 0, 0, 0, 2, 129, 1, 172, 56, 120, 63, 106, 59, 47, 227, 181, 121, 113, 141,
                             107, 168, 73, 58, 69, 109, 128, 6, 101, 178, 67, 58, 14, 124, 130, 60, 255, 144, 166, 3};
 uint8_t g_seqnum = 0;
 uint16_t BLESDA::getTXCharacteristicHandle() {
@@ -32,13 +33,13 @@ uint16_t BLESDA::getRXCharacteristicHandle() {
 size_t BLESDA::write(const void *_buffer, size_t length) {
     size_t         origLength = length;
     const uint8_t *buffer     = static_cast<const uint8_t *>(_buffer);
-    printf("1x\r\n");
+  //  printf("1x\r\n");
 
     if (ble.getGapState().connected) {
-        printf("2\r\n");
+    //    printf("2\r\n");
         unsigned bufferIndex = 0;
         while (length) {
-            printf("3\r\n");
+      //      printf("3\r\n");
             unsigned bytesRemainingInSendBuffer = BLE_UART_SERVICE_MAX_DATA_LEN - sendBufferIndex;
             unsigned bytesToCopy                = (length < bytesRemainingInSendBuffer) ? length : bytesRemainingInSendBuffer;
 
@@ -52,7 +53,7 @@ size_t BLESDA::write(const void *_buffer, size_t length) {
             if ((sendBufferIndex == BLE_UART_SERVICE_MAX_DATA_LEN) ||
                 // (sendBuffer[sendBufferIndex - 1] == '\r')          ||
                 (sendBuffer[sendBufferIndex - 1] == '\n')) {
-                printf("4\r\n");
+        //        printf("4\r\n");
                 ble.gattServer().write(getRXCharacteristicHandle(), static_cast<const uint8_t *>(sendBuffer), sendBufferIndex);
                 sendBufferIndex = 0;
             }
@@ -83,24 +84,26 @@ int BLESDA::_getc() {
 }
 
 PTErr BLESDA::BLEHeaderTX(_sda_over_ble_header* header, uint8_t len){
-    printf("SeqNum - %d type - %d MF - %d Fragment Num - %d frag_length - %d total size %ld first length %d second length %d  \r\n", header->seq_num,
-    header->type, header->more_frag, header->frag_num, header->frag_length,header->length, header->length & 0xff00 >> 8,header->length & 0x00ff);
-    uint8_t transmit_data_len = len+START_DATA_BYTE;
+    //printf("SeqNum - %d type - %d MF - %d Fragment Num - %d frag_length - %d total size %ld first length %d second length %d  \r\n", header->seq_num,
+    //header->type, header->more_frag, header->frag_num, header->frag_length,header->length, header->length & 0xff00 >> 8,header->length & 0x00ff);
+    printf("Seq Num: %d", header->seq_num);
+    uint8_t transmit_data_len = len+START_DATA_BYTE+1;
     uint8_t* msg = (uint8_t*)malloc(transmit_data_len);
     msg[0] = header->seq_num;
     msg[1] = (header->type|(header->more_frag<<2)|(header->frag_num<<3));
-    msg[2] = (header->length & 0xff00) >> 8;
-    msg[3] = (header->length & 0x00ff);
-    msg[4] = header->frag_length;
-    memcpy(&msg[8], header->payload, len);
-    printf("---------Header----------\r\n");
-    printf("Transmitting data to BLE - %d\r\n",transmit_data_len);
+    msg[2] = (header->frag_length);
+    msg[3] = (header->length & 0xff00>>8);
+    msg[4] = (header->length & 0x00ff);
+    memcpy(&msg[START_DATA_BYTE], header->payload, len);
+    msg[transmit_data_len-1] = 32;
+   // printf("---------Header----------\r\n");
+   // printf("Transmitting data to BLE - %d\r\n",transmit_data_len);
     write(msg, transmit_data_len);
     flush();
-    printf("\r\n");
     if(msg){
         free(msg);
     }
+    //return PT_ERR_OK;
 }
 
 
@@ -134,10 +137,10 @@ PTErr BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize)
             fragmentStartOffset+=BLE_MTU_SIZE;
         }
     //Transmit it to BLE
-    PTErr status = BLEHeaderTX(&frag_sda, payloadsize);
-    if(status != PT_ERR_OK){
-        return status;
-    }
+    BLEHeaderTX(&frag_sda, payloadsize);
+    // if(status != PT_ERR_OK){
+    //     return status;
+    // }
     payloadsize -= BLE_MTU_SIZE;
     //Wait for Tx Done
     //free allocated memory
@@ -152,29 +155,33 @@ PTErr BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize)
     //free(sda_payload);
  }
 PTErr BLESDA::ProcessBuffer(sda_over_ble_header* frag_sda){
-    printf("Processing buffer\r\n");
+    mbed_tracef(TRACE_LEVEL_INFO, TRACE_GROUP,"Processing buffer\r\n");
     uint8_t* msg_to_sda;
-    uint8_t* response = (uint8_t*)malloc(60*sizeof(uint8_t));
-    uint8_t response_size = 60;
+    uint8_t* response = (uint8_t*)malloc(231*sizeof(uint8_t));
+    uint8_t response_size = 231;
     uint16_t sda_response_size=0;
     if(frag_sda->frag_num == 1){
-        msg_to_sda = (uint8_t*)malloc(frag_sda->frag_length*sizeof(uint8_t));
+        msg_to_sda = (uint8_t*)malloc(frag_sda->length*sizeof(uint8_t));
     }
     memcpy(&msg_to_sda[_index],frag_sda->payload, frag_sda->frag_length);
+
+    printf("MF -  %d", frag_sda->more_frag);
 
     if(frag_sda->more_frag == 1){
        _index +=frag_sda->frag_length;
     }
     else{
-        printf("Sending buffer\r\n");
-        for(int i = 0 ; i < frag_sda->frag_length;i++)
-            printf("%d ",msg_to_sda[i]);
+        mbed_tracef(TRACE_LEVEL_INFO,TRACE_GROUP,"Sending buffer to SDA\r\n");
         ProtocolTranslator* protocoltranslator = new ProtocolTranslator(msg_to_sda);
-        if(protocoltranslator->init(response,response_size,&sda_response_size)!=PT_ERR_OK){
-            return PT_ERR_PROCESS_REQ;
+        PTErr status = protocoltranslator->init(response,response_size,&sda_response_size);
+        if(status!=PT_ERR_OK){
+            return status;
         }
-        delete protocoltranslator;
-        return sda_fragment_datagram(response, sda_response_size);
+        if(protocoltranslator)
+        {
+            delete protocoltranslator;
+        }
+        sda_fragment_datagram(response, sda_response_size);
         _index = 0;
     }
     if(response){
@@ -190,8 +197,9 @@ PTErr BLESDA::processInputBuffer(uint8_t* msg_in) {
     buffer.type = (msg_in[1] & 0x03);
     buffer.more_frag = ((msg_in[1] & 0x04)>>2);
     buffer.frag_num = ((msg_in[1]& 0x38)>>3);
-    buffer.length = (msg_in[2]<< 8| (msg_in[3]));
-    buffer.frag_length = msg_in[4];
+    buffer.frag_length = msg_in[2];
+    buffer.length = (msg_in[3]<< 8| (msg_in[4]));
+
     uint16_t total_req_size = buffer.length;
     buffer.payload = (uint8_t*)malloc(buffer.frag_length);
     memcpy(buffer.payload, &msg_in[8],buffer.frag_length);
@@ -206,6 +214,13 @@ void BLESDA::onDataWritten(const GattWriteCallbackParams *params) {
             receiveBufferIndex = 0;
             memcpy(receiveBuffer, params->data, numBytesReceived);
         }
-        processInputBuffer(request);
+        processInputBuffer(receiveBuffer);
+        if(receiveBuffer){
+            memset(receiveBuffer, 0 ,numBytesReceived);
+        }
+        // if(status != PT_ERR_OK){
+        //     mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP,"Could not process.. got error:(%d)", (int)status);
+        //     return;
+        // }
     }
 }

@@ -21,6 +21,9 @@
 #include "ble/pal/Deprecated.h"
 #include "protocoltranslator.h"
 #include "mbed.h"
+#include "mbed_trace.h"
+
+#define TRACE_GROUP             "ble"
 
 #define SERIAL_NUM_INDEX        0
 #define CONTROL_FRAME_INDEX     1
@@ -31,17 +34,17 @@
 #define BLE_MTU_SIZE  240
 #define SDA_DATA    1
 #define SDA_ACK 2
-enum blep_err_code{
-    ERR_OK,
-    ERR_RESEND_REQ,
-    ERR_CRC,
-    ERR_MSG_NULL,
-    ERR_MEMORY_OVERFLOW,
-};
+// enum blep_err_code{
+//     ERR_OK,
+//     ERR_RESEND_REQ,
+//     ERR_CRC,
+//     ERR_MSG_NULL,
+//     ERR_MEMORY_OVERFLOW,
+// };
 typedef struct _sda_over_ble_header {
 	 /* Frame sequence number(1byte) */
 	uint8_t seq_num;
-    /* control frame field (2byte) */
+    /* control frame field 12byte) */
 	uint8_t type:2;
     uint8_t more_frag:1;
 	uint8_t frag_num:3;
@@ -49,14 +52,15 @@ typedef struct _sda_over_ble_header {
 	uint8_t resv2;
     uint8_t resv3;
     uint16_t resv4;
-	 /* Total length (2byte) */
-    uint16_t length;
     /* Frag length (1byte) */
     uint8_t frag_length;
+    /* Total length (2byte) */
+    uint16_t length;
+
 	/* Payload */
     uint8_t* payload;
     /* CRC */
-    uint32_t crc;
+    uint8_t crc;
 }sda_over_ble_header __attribute__((__packed__));
 
 
@@ -188,7 +192,7 @@ public:
     PTErr processInputBuffer(uint8_t* msg_in);
 
 private:
-    Thread t;
+    //Thread t;
 
     BLE                 &ble;                                           //BLe instance
     uint16_t             _index;
