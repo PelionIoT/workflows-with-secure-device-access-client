@@ -81,12 +81,13 @@ PTErr ProtocolTranslator::init(uint8_t* response, uint8_t response_max_size, uin
     _message_size = read_message_size();
     mbed_tracef(TRACE_ACTIVE_LEVEL_INFO,TRACE_GROUP, "message size: %d",_message_size);
     uint8_t* msg = (uint8_t*)malloc(_message_size);
+    if(msg==NULL){
+        mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP,"Can not init message to process ot SDA");
+        return PT_ERR_MSG;
+    }
     if(read_message(msg,_message_size)!=PT_ERR_OK) {
         mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP, "not able to get message %d",_message_size);
     }
-    //printf("Message\r\n");
-    // for(int i = 0 ; i < _message_size; i++)
-    //     printf("%d ",msg[i]);
     uint8_t sig_from_message[KCM_SHA256_SIZE];
     status = read_message_signature(sig_from_message, sizeof(sig_from_message));
     if(status != PT_ERR_OK) {
@@ -96,10 +97,10 @@ PTErr ProtocolTranslator::init(uint8_t* response, uint8_t response_max_size, uin
     bool success = process_request_fetch_response(msg, _message_size, response, response_max_size, &response_actual_size);
         if (!success) {
             tr_error("Failed processing request message");
+            free(msg);
             free(_buffer);
             return  PT_ERR_PROCESS_REQ;
         }
-        printf("Response\r\n");
         // for(int i = 0; i< response_actual_size; i++)
         //     mbed_tracef(TRACE_LEVEL_ERROR, "PT", " %d ", response[i]);
         *response_size = response_actual_size;
@@ -116,13 +117,14 @@ PTErr ProtocolTranslator::init(uint8_t* response, uint8_t response_max_size, uin
         }
 
     //compare signatures
-        // for(int i = 0 ; i < 32; i++)
-        //     printf("%d ", sig_from_message[i]);
         if (memcmp(self_calculated_sig, sig_from_message, KCM_SHA256_SIZE) != 0) {
             mbed_tracef(TRACE_LEVEL_CMD, TRACE_GROUP, "Inconsistent message signature");
             status_code = PT_ERR_INCONSISTENT_MESSAGE_SIG;
             free(msg);
             return status_code;
+        }
+        if(*msg){
+            free(msg);
         }
     status_code = PT_ERR_OK;
     return status_code;

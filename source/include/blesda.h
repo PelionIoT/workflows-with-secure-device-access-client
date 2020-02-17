@@ -31,7 +31,7 @@
 #define UPPER_BYTE_REQ_INDEX    3
 #define LOWER_BYTE_REQ_INDEX    4
 #define START_DATA_BYTE         8
-#define BLE_MTU_SIZE  240
+#define BLE_MTU_SIZE            231
 #define SDA_DATA    1
 #define SDA_ACK 2
 // enum blep_err_code{

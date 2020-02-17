@@ -88,7 +88,7 @@ PTErr BLESDA::BLEHeaderTX(_sda_over_ble_header* header, uint8_t len){
     //header->type, header->more_frag, header->frag_num, header->frag_length,header->length, header->length & 0xff00 >> 8,header->length & 0x00ff);
     printf("Seq Num: %d", header->seq_num);
     uint8_t transmit_data_len = len+START_DATA_BYTE+1;
-    uint8_t* msg = (uint8_t*)malloc(transmit_data_len);
+    uint8_t* msg = (uint8_t*)malloc(transmit_data_len*sizeof(uint8_t));
     msg[0] = header->seq_num;
     msg[1] = (header->type|(header->more_frag<<2)|(header->frag_num<<3));
     msg[2] = (header->frag_length);
@@ -100,7 +100,7 @@ PTErr BLESDA::BLEHeaderTX(_sda_over_ble_header* header, uint8_t len){
    // printf("Transmitting data to BLE - %d\r\n",transmit_data_len);
     write(msg, transmit_data_len);
     flush();
-    if(msg){
+    if(*msg){
         free(msg);
     }
     //return PT_ERR_OK;
@@ -125,67 +125,66 @@ PTErr BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize)
         frag_sda.frag_num=(++frag_num);
         frag_sda.length=totalpayloadsize;
         frag_sda.frag_length=(payloadsize<BLE_MTU_SIZE)? payloadsize : BLE_MTU_SIZE;
-        frag_sda.payload = (uint8_t*) malloc(BLE_MTU_SIZE);
+        frag_sda.payload = (uint8_t*) malloc(frag_sda.frag_length);
         if(frag_sda.payload)
             {
-                memcpy(&frag_sda.payload[0],&sda_payload[fragmentStartOffset],BLE_MTU_SIZE);
+                memcpy(&frag_sda.payload[0],&sda_payload[fragmentStartOffset],frag_sda.frag_length);
+            }
+            else{
+                mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP,"can not create payload to send to ble");
             }
         if(payloadsize<BLE_MTU_SIZE) {
             fragmentStartOffset = 0;
         }
         else{
-            fragmentStartOffset+=BLE_MTU_SIZE;
+            fragmentStartOffset+=frag_sda.frag_length;
         }
     //Transmit it to BLE
-    BLEHeaderTX(&frag_sda, payloadsize);
+        BLEHeaderTX(&frag_sda, payloadsize);
     // if(status != PT_ERR_OK){
     //     return status;
     // }
-    payloadsize -= BLE_MTU_SIZE;
+        payloadsize -= BLE_MTU_SIZE;
     //Wait for Tx Done
     //free allocated memory
-        if(frag_sda.payload)
-        {
-            free(frag_sda.payload);
-        }
-    num_frag--;
-    printf("Num frag %d\r\n",num_frag);
+        free(frag_sda.payload);
     }
+    free(sda_payload);
     return PT_ERR_OK;
     //free(sda_payload);
  }
 PTErr BLESDA::ProcessBuffer(sda_over_ble_header* frag_sda){
     mbed_tracef(TRACE_LEVEL_INFO, TRACE_GROUP,"Processing buffer\r\n");
-    uint8_t* msg_to_sda;
-    uint8_t* response = (uint8_t*)malloc(231*sizeof(uint8_t));
+    static uint8_t *msg_to_sda = NULL;
     uint8_t response_size = 231;
+    uint8_t response[response_size];
     uint16_t sda_response_size=0;
     if(frag_sda->frag_num == 1){
         msg_to_sda = (uint8_t*)malloc(frag_sda->length*sizeof(uint8_t));
+        if(!*msg_to_sda){
+            mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP,"Could not allocate memoryfor message to sda");
+        }
     }
     memcpy(&msg_to_sda[_index],frag_sda->payload, frag_sda->frag_length);
-
-    printf("MF -  %d", frag_sda->more_frag);
 
     if(frag_sda->more_frag == 1){
        _index +=frag_sda->frag_length;
     }
     else{
+        _index = 0;
         mbed_tracef(TRACE_LEVEL_INFO,TRACE_GROUP,"Sending buffer to SDA\r\n");
         ProtocolTranslator* protocoltranslator = new ProtocolTranslator(msg_to_sda);
         PTErr status = protocoltranslator->init(response,response_size,&sda_response_size);
+        // for(int i = 0 ; i < sda_response_size; i++)
+        //     printf("%d ", response[i]);
         if(status!=PT_ERR_OK){
             return status;
         }
-        if(protocoltranslator)
-        {
-            delete protocoltranslator;
-        }
-        sda_fragment_datagram(response, sda_response_size);
-        _index = 0;
+    delete protocoltranslator;
+    if(*msg_to_sda){
+        free(msg_to_sda);
     }
-    if(response){
-        free(response);
+    return sda_fragment_datagram(response, sda_response_size);
     }
 }
 PTErr BLESDA::processInputBuffer(uint8_t* msg_in) {
@@ -193,15 +192,21 @@ PTErr BLESDA::processInputBuffer(uint8_t* msg_in) {
         return PT_ERR_EMPTY_MSG;
     }
     sda_over_ble_header buffer;
+    //buffer->payload = (uint8_t*)malloc(msg[2]);
+    // if(!buffer->payload){
+    //     mbed_tracef(TRACE_ACTIVE_LEVEL_ERROR, TRACE_GROUP, "Could not allocate memory");
+    // }
+    //buffer = (sda_over_ble_header *)msg_in;
     buffer.seq_num = msg_in[0];
     buffer.type = (msg_in[1] & 0x03);
     buffer.more_frag = ((msg_in[1] & 0x04)>>2);
     buffer.frag_num = ((msg_in[1]& 0x38)>>3);
     buffer.frag_length = msg_in[2];
     buffer.length = (msg_in[3]<< 8| (msg_in[4]));
-
-    uint16_t total_req_size = buffer.length;
-    buffer.payload = (uint8_t*)malloc(buffer.frag_length);
+    buffer.payload = (uint8_t*)malloc(buffer.frag_length*sizeof(uint8_t));
+    if(!buffer.payload){
+            mbed_tracef(TRACE_ACTIVE_LEVEL_ERROR, TRACE_GROUP, "Could not allocate memory");
+    }
     memcpy(buffer.payload, &msg_in[8],buffer.frag_length);
     return ProcessBuffer(&buffer);
 }
