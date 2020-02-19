@@ -71,18 +71,22 @@ PTErr ProtocolTranslator::read_message_signature(uint8_t* sig, size_t req_size){
 
 PTErr ProtocolTranslator::init(uint8_t* response, uint8_t response_max_size, uint16_t* response_size){
    // printf("Response maxsize %ld\r\n",response_max_size);
-    size_t response_actual_size;
+    size_t response_actual_size = 0;
     //printf("In PT\r\n");
+    for(int i = 0 ; i < 10; i++)
+        printf("%d ",_buffer[i]);
     PTErr status = is_token_detected();
+    printf(" 4");
     if(status != PT_ERR_OK){
         mbed_tracef(TRACE_ACTIVE_LEVEL_INFO,TRACE_GROUP,"Token not detected");
         return status;
     }
     _message_size = read_message_size();
-    mbed_tracef(TRACE_ACTIVE_LEVEL_INFO,TRACE_GROUP, "message size: %d",_message_size);
+    mbed_tracef(TRACE_ACTIVE_LEVEL_INFO,TRACE_GROUP, "message siz %d",_message_size);
     uint8_t* msg = (uint8_t*)malloc(_message_size);
     if(msg==NULL){
-        mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP,"Can not init message to process ot SDA");
+        printf("can not init msg");
+        mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP,"Can not init message to process SDA");
         return PT_ERR_MSG;
     }
     if(read_message(msg,_message_size)!=PT_ERR_OK) {
@@ -91,6 +95,7 @@ PTErr ProtocolTranslator::init(uint8_t* response, uint8_t response_max_size, uin
     uint8_t sig_from_message[KCM_SHA256_SIZE];
     status = read_message_signature(sig_from_message, sizeof(sig_from_message));
     if(status != PT_ERR_OK) {
+        printf("err reading msg sig");
         mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP, "err reading message");
         return status;
     }
@@ -110,6 +115,7 @@ PTErr ProtocolTranslator::init(uint8_t* response, uint8_t response_max_size, uin
         PTErr status_code;
         kcm_status = cs_hash(CS_SHA256, msg, _message_size, self_calculated_sig, sizeof(self_calculated_sig));
         if (kcm_status != KCM_STATUS_SUCCESS) {
+            printf("failed calculating msg sig");
             mbed_tracef(TRACE_LEVEL_CMD, TRACE_GROUP, "Failed calculating message signature");
             status_code = PT_ERR_FAILED_TO_CALCULATE_MESSAGE_SIG;
             free(msg);
@@ -117,13 +123,13 @@ PTErr ProtocolTranslator::init(uint8_t* response, uint8_t response_max_size, uin
         }
 
     //compare signatures
-        if (memcmp(self_calculated_sig, sig_from_message, KCM_SHA256_SIZE) != 0) {
-            mbed_tracef(TRACE_LEVEL_CMD, TRACE_GROUP, "Inconsistent message signature");
-            status_code = PT_ERR_INCONSISTENT_MESSAGE_SIG;
-            free(msg);
-            return status_code;
-        }
-        if(*msg){
+        // if (memcmp(self_calculated_sig, sig_from_message, KCM_SHA256_SIZE) != 0) {
+        //     mbed_tracef(TRACE_LEVEL_CMD, TRACE_GROUP, "Inconsistent message signature");
+        //     status_code = PT_ERR_INCONSISTENT_MESSAGE_SIG;
+        //     free(msg);
+        //     return status_code;
+        // }
+        if(msg!=NULL){
             free(msg);
         }
     status_code = PT_ERR_OK;

@@ -48,14 +48,15 @@ typedef struct _sda_over_ble_header {
 	uint8_t type:2;
     uint8_t more_frag:1;
 	uint8_t frag_num:3;
+        /* Frag length (1byte) */
+    uint8_t frag_length;
+    /* Total length (2byte) */
+    uint16_t length;
     uint8_t resv1:2;
 	uint8_t resv2;
     uint8_t resv3;
     uint16_t resv4;
-    /* Frag length (1byte) */
-    uint8_t frag_length;
-    /* Total length (2byte) */
-    uint16_t length;
+
 
 	/* Payload */
     uint8_t* payload;
@@ -149,7 +150,7 @@ public:
      * @param  length Number of characters to be appended.
      * @return        Number of characters appended to the rxCharacteristic.
      */
-    size_t write(const void *_buffer, size_t length);
+    size_t write(uint8_t *_buffer, size_t length);
     /**
      * Helper function to write out strings.
      * @param  str The received string.
@@ -189,7 +190,7 @@ public:
     void onDataRead(const GattReadCallbackParams *params);
     PTErr ProcessBuffer(sda_over_ble_header* frag_sda);
     PTErr sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize);
-    PTErr processInputBuffer(uint8_t* msg_in);
+    PTErr processInputBuffer(uint8_t* msg_in, uint16_t bytesRecieved);
 
 private:
     //Thread t;

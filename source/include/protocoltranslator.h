@@ -40,8 +40,9 @@ enum PTErr{
 };
 class ProtocolTranslator{
     public:
-        ProtocolTranslator(uint8_t* request):
-        _message_header(FTCD_MSG_HEADER_TOKEN_SDA),_index(0),_buffer(request),_message_size(0) {};
+        ProtocolTranslator(uint8_t* request)://_buffer = request;
+        _message_header(FTCD_MSG_HEADER_TOKEN_SDA),_index(0),_message_size(0),_buffer(request) {
+        };
         PTErr init(uint8_t* response,uint8_t response_max_size, uint16_t* response_size);
         PTErr is_token_detected();
         uint32_t read_message_size();
