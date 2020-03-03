@@ -62,7 +62,7 @@ static void demo_main(){
         return;
     }
     char* endpoint = get_endpoint_name();
-    printf("Endpoint: %s", endpoint);
+    //printf("Endpoint: %s", endpoint);
     sda_status_e sda_status = sda_init();
     if (sda_status != SDA_STATUS_SUCCESS) {
         tr_error("Failed initializing Secure-Device-Access");
@@ -82,7 +82,7 @@ static void demo_main(){
 
 int main(void) {
 
-    printf("Startup\r\n");
+   // printf("Startup\r\n");
 	bool success = mbed_trace_helper_init(TRACE_ACTIVE_LEVEL_ALL | TRACE_MODE_COLOR, false);
     if (!success) {
         return EXIT_FAILURE;

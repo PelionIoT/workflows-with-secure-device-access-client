@@ -39,4 +39,6 @@ bool Comm_interface::start() {
     return status;
 }
 
-bool Comm_interface::finish(){}
+bool Comm_interface::finish(){
+    delete _bleprocess;
+}

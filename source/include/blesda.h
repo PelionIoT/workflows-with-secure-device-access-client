@@ -52,7 +52,6 @@ typedef struct _sda_over_ble_header {
     uint8_t frag_length;
     /* Total length (2byte) */
     uint16_t length;
-    uint8_t resv1:2;
 	uint8_t resv2;
     uint8_t resv3;
     uint16_t resv4;
@@ -161,14 +160,15 @@ public:
      * Flush sendBuffer, i.e., forcefully write its contents to the UART RX
      * characteristic even if the buffer is not full.
      */
-    void flush();
-    /**
+    void flush(uint8_t* buff, uint8_t length);    /**
      * Override for Stream::_putc().
      * @param  c
      *         This function writes the character c, cast to an unsigned char, to stream.
      * @return
      *     The character written as an unsigned char cast to an int or EOF on error.
      */
+    /*send ack to the mobile*/
+    void sendACK(_sda_over_ble_header* buffer);
     int _putc(int c);
     /**
      * Override for Stream::_getc().
@@ -190,7 +190,7 @@ public:
     void onDataRead(const GattReadCallbackParams *params);
     PTErr ProcessBuffer(sda_over_ble_header* frag_sda);
     PTErr sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize);
-    PTErr processInputBuffer(uint8_t* msg_in, uint16_t bytesRecieved);
+    PTErr processInputBuffer(uint8_t* msg_in, uint8_t bytesRecieved);
 
 private:
     //Thread t;

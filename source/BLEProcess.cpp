@@ -40,10 +40,10 @@ void BLEProcess::on_init(mbed::Callback<void(BLE&, events::EventQueue&)> cb)
  */
 bool BLEProcess::start()
 {
-    printf("Ble process started.\r\n");
+    //printf("Ble process started.\r\n");
 
     if (_ble_interface.hasInitialized()) {
-        printf("Error: the ble instance has already been initialized.\r\n");
+        //printf("Error: the ble instance has already been initialized.\r\n");
         return false;
     }
 
@@ -56,7 +56,7 @@ bool BLEProcess::start()
     );
 
     if (error) {
-        printf("Error: %u returned by BLE::init.\r\n", error);
+        //printf("Error: %u returned by BLE::init.\r\n", error);
         return false;
     }
     return true;
@@ -69,7 +69,7 @@ void BLEProcess::stop()
 {
     if (_ble_interface.hasInitialized()) {
         _ble_interface.shutdown();
-        printf("Ble process stopped.");
+        //printf("Ble process stopped.");
     }
 }
 
@@ -90,10 +90,10 @@ void BLEProcess::when_init_complete(BLE::InitializationCompleteCallbackContext *
 {
 
     if (event->error) {
-        printf("Error %u during the initialization\r\n", event->error);
+        //printf("Error %u during the initialization\r\n", event->error);
         return;
     }
-    printf("Ble instance initialized\r\n");
+    //printf("Ble instance initialized\r\n");
 
     Gap &gap = _ble_interface.gap();
     gap.onConnection(this, &BLEProcess::when_connection);
@@ -141,10 +141,10 @@ bool BLEProcess::start_advertising(void)
     ble_error_t error = gap.startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
 
     if (error) {
-        printf("Error %u during gap.startAdvertising.\r\n", error);
+        //printf("Error %u during gap.startAdvertising.\r\n", error);
         return false;
     } else {
-        printf("Advertising started.\r\n");
+        //printf("Advertising started.\r\n");
         return true;
     }
 }
@@ -159,7 +159,7 @@ bool BLEProcess::set_advertising_parameters()
     );
 
     if (error) {
-        printf("Gap::setAdvertisingParameters() failed with error %d", error);
+        //printf("Gap::setAdvertisingParameters() failed with error %d", error);
         return false;
     }
 
@@ -184,7 +184,7 @@ bool BLEProcess::set_advertising_data()
     );
 
     if (error) {
-        printf("Gap::setAdvertisingPayload() failed with error %d", error);
+        //printf("Gap::setAdvertisingPayload() failed with error %d", error);
         return false;
     }
 

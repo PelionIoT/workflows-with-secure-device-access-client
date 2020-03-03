@@ -73,30 +73,39 @@ PTErr ProtocolTranslator::init(uint8_t* response, uint8_t response_max_size, uin
    // printf("Response maxsize %ld\r\n",response_max_size);
     size_t response_actual_size = 0;
     //printf("In PT\r\n");
-    for(int i = 0 ; i < 10; i++)
-        printf("%d ",_buffer[i]);
+    // for(int i = 0 ; i < 10; i++)
+    //     printf("%d ",_buffer[i]);
     PTErr status = is_token_detected();
-    printf(" 4");
+    //printf(" 4");
     if(status != PT_ERR_OK){
+        free(_buffer);
         mbed_tracef(TRACE_ACTIVE_LEVEL_INFO,TRACE_GROUP,"Token not detected");
         return status;
     }
     _message_size = read_message_size();
-    mbed_tracef(TRACE_ACTIVE_LEVEL_INFO,TRACE_GROUP, "message siz %d",_message_size);
+    mbed_tracef(TRACE_ACTIVE_LEVEL_INFO,TRACE_GROUP, "message size %d",_message_size);
     uint8_t* msg = (uint8_t*)malloc(_message_size);
     if(msg==NULL){
-        printf("can not init msg");
+       // printf("can not init msg");
         mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP,"Can not init message to process SDA");
+        free(_buffer);
         return PT_ERR_MSG;
+
     }
-    if(read_message(msg,_message_size)!=PT_ERR_OK) {
+    status = read_message(msg,_message_size);
+    if(status!=PT_ERR_OK) {
         mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP, "not able to get message %d",_message_size);
+        free(msg);
+        free(_buffer);
+        return status;
     }
     uint8_t sig_from_message[KCM_SHA256_SIZE];
     status = read_message_signature(sig_from_message, sizeof(sig_from_message));
     if(status != PT_ERR_OK) {
-        printf("err reading msg sig");
+       // printf("err reading msg sig");
         mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP, "err reading message");
+        free(msg);
+        free(_buffer);
         return status;
     }
     bool success = process_request_fetch_response(msg, _message_size, response, response_max_size, &response_actual_size);
@@ -112,14 +121,14 @@ PTErr ProtocolTranslator::init(uint8_t* response, uint8_t response_max_size, uin
 
         uint8_t self_calculated_sig[KCM_SHA256_SIZE];
         kcm_status_e kcm_status = KCM_STATUS_SUCCESS;
-        PTErr status_code;
         kcm_status = cs_hash(CS_SHA256, msg, _message_size, self_calculated_sig, sizeof(self_calculated_sig));
         if (kcm_status != KCM_STATUS_SUCCESS) {
-            printf("failed calculating msg sig");
+            //printf("failed calculating msg sig");
             mbed_tracef(TRACE_LEVEL_CMD, TRACE_GROUP, "Failed calculating message signature");
-            status_code = PT_ERR_FAILED_TO_CALCULATE_MESSAGE_SIG;
+            status = PT_ERR_FAILED_TO_CALCULATE_MESSAGE_SIG;
             free(msg);
-            return status_code;
+            free(_buffer);
+            return status;
         }
 
     //compare signatures
@@ -129,9 +138,8 @@ PTErr ProtocolTranslator::init(uint8_t* response, uint8_t response_max_size, uin
         //     free(msg);
         //     return status_code;
         // }
-        if(msg!=NULL){
-            free(msg);
-        }
-    status_code = PT_ERR_OK;
-    return status_code;
+    free(msg);
+    free(_buffer);
+    status = PT_ERR_OK;
+    return status;
 }
