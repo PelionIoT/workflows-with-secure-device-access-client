@@ -42,16 +42,14 @@ PTErr ProtocolTranslator::is_token_detected(){
         if(_buffer[i]!=_message_header[i]){
             return PT_ERR_HEADER_MISMATCH;
         }
-    }
-     _index +=FTCD_MSG_HEADER_TOKEN_SIZE_BYTES;
-        return PT_ERR_OK;
+    }        return PT_ERR_OK;
 }
 
 uint32_t ProtocolTranslator::read_message_size(){
-    uint32_t message_size = (_buffer[_index]<<24)+
-                            (_buffer[++_index]<<16)+
-                            (_buffer[++_index]<<8)+
-                            _buffer[++_index];
+    uint32_t message_size = (_buffer[8]<<24)+
+                            (_buffer[9]<<16)+
+                            (_buffer[10]<<8)+
+                            _buffer[11];
     return message_size;
 }
 // read message which goes to SDA.
@@ -59,7 +57,6 @@ PTErr ProtocolTranslator::read_message(uint8_t* message, uint32_t message_size){
     if(memcpy(message,&_buffer[START_DATA], message_size)==NULL){
         return PT_ERR_MSG;
     }
-    _index+=message_size;
     return PT_ERR_OK;
 }
 PTErr ProtocolTranslator::read_message_signature(uint8_t* sig, size_t req_size){
@@ -72,11 +69,10 @@ PTErr ProtocolTranslator::read_message_signature(uint8_t* sig, size_t req_size){
 PTErr ProtocolTranslator::init(uint8_t* response, uint8_t response_max_size, uint16_t* response_size){
    // printf("Response maxsize %ld\r\n",response_max_size);
     size_t response_actual_size = 0;
-    //printf("In PT\r\n");
-    for(int i = 0 ; i < 10; i++)
-        printf("%d ",_buffer[i]);
+    // for(int i = 0 ; i < 8; i++){
+    //     printf("%d ", _buffer[i]);
+    // }
     PTErr status = is_token_detected();
-    printf(" 4");
     if(status != PT_ERR_OK){
         mbed_tracef(TRACE_ACTIVE_LEVEL_INFO,TRACE_GROUP,"Token not detected");
         return status;
@@ -91,19 +87,21 @@ PTErr ProtocolTranslator::init(uint8_t* response, uint8_t response_max_size, uin
     }
     if(read_message(msg,_message_size)!=PT_ERR_OK) {
         mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP, "not able to get message %d",_message_size);
+        free(msg);
+        return PT_ERR_MSG;
     }
     uint8_t sig_from_message[KCM_SHA256_SIZE];
     status = read_message_signature(sig_from_message, sizeof(sig_from_message));
     if(status != PT_ERR_OK) {
         printf("err reading msg sig");
         mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP, "err reading message");
+        free(msg);
         return status;
     }
     bool success = process_request_fetch_response(msg, _message_size, response, response_max_size, &response_actual_size);
         if (!success) {
             tr_error("Failed processing request message");
             free(msg);
-            free(_buffer);
             return  PT_ERR_PROCESS_REQ;
         }
         // for(int i = 0; i< response_actual_size; i++)
@@ -129,9 +127,6 @@ PTErr ProtocolTranslator::init(uint8_t* response, uint8_t response_max_size, uin
         //     free(msg);
         //     return status_code;
         // }
-        if(msg!=NULL){
-            free(msg);
-        }
-    status_code = PT_ERR_OK;
-    return status_code;
+    free(msg);
+    return PT_ERR_OK;
 }

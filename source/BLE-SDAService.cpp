@@ -17,9 +17,14 @@
 using mbed::callback;
 #define TRACE_GROUP "ble"
 
+uint8_t msg_to_sda[1000];
+uint16_t idx=0;
 
-uint8_t request[54] = {0,SDA_DATA|0<<2|1<<3,46,0,46,0,0,0,109, 98, 101, 100, 100, 98, 97, 112, 0, 0, 0, 2, 129, 1, 172, 56, 120, 63, 106, 59, 47, 227, 181, 121, 113, 141,
-                            107, 168, 73, 58, 69, 109, 128, 6, 101, 178, 67, 58, 14, 124, 130, 60, 255, 144, 166, 3};
+
+// uint8_t request[54] = {0,SDA_DATA|0<<2|1<<3,46,0,46,0,0,0,109, 98, 101, 100, 100, 98, 97, 112, 0, 0, 0, 2, 129, 1, 172, 56, 120, 63, 106, 59, 47, 227, 181, 121, 113, 141,
+//                             107, 168, 73, 58, 69, 109, 128, 6, 101, 178, 67, 58, 14, 124, 130, 60, 255, 144, 166, 3};
+// int8_t sda_dummy_response[]={0, 9, 16, 0, 16, 0, 0, 0, -65, 3, 27, -103, -14, 53, -97, -39, 114, -128, -42, 1, 2, 2, 0, -1, 32};
+
 uint8_t g_seqnum = 0;
 uint16_t BLESDA::getTXCharacteristicHandle() {
     return txCharacteristic.getValueAttribute().getHandle();
@@ -70,12 +75,9 @@ size_t BLESDA::write(uint8_t *_buffer, size_t length) {
 // size_t BLESDA::writeString(const char *str) {
 //     return write(str, strlen(str));
 // }
-void BLESDA::flush() {
+void BLESDA::flush(uint8_t* buff, uint8_t length) {
     if (ble.getGapState().connected) {
-        if (sendBufferIndex != 0) {
-            ble.gattServer().write(getRXCharacteristicHandle(), static_cast<const uint8_t *>(sendBuffer), sendBufferIndex);
-            sendBufferIndex = 0;
-        }
+            ble.gattServer().write(getRXCharacteristicHandle(), static_cast<const uint8_t *>(buff), length);
     }
 }
 // int BLESDA::_putc(int c) {
@@ -103,9 +105,8 @@ PTErr BLESDA::BLEHeaderTX(_sda_over_ble_header* header, uint8_t len){
   //  msg[transmit_data_len-1] = 32;
    // printf("---------Header----------\r\n");
    // printf("Transmitting data to BLE - %d\r\n",transmit_data_len);
-    write(msg, transmit_data_len);
-    flush();
-    wait_ms(500);
+    flush(msg, transmit_data_len);
+    // flush();
     free(msg);
     //return PT_ERR_OK;
 }
@@ -119,10 +120,10 @@ PTErr BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize)
     static uint8_t frag_num=0;
     uint16_t totalpayloadsize=payloadsize;
     //Calculate number of fragment in order to be transmitted
-    uint8_t num_frag = (payloadsize/BLE_MTU_SIZE)+1;
+    uint8_t num_frag = ((payloadsize%BLE_MTU_SIZE)==0)?(payloadsize/BLE_MTU_SIZE):(payloadsize/BLE_MTU_SIZE)+1;
     while(num_frag)
     {
-        sda_over_ble_header frag_sda ={0};
+        sda_over_ble_header  frag_sda ={0};
         frag_sda.seq_num = g_seqnum;
         g_seqnum = g_seqnum+1;
         frag_sda.type = SDA_DATA;
@@ -138,7 +139,6 @@ PTErr BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize)
               for(int i=0;i<frag_sda.frag_length;i++)
               {
                     frag_sda.payload[i]=sda_payload[fragmentStartOffset+i];
-                    printf("%d ",frag_sda.payload[i]);
               }
             }
             else{
@@ -177,44 +177,46 @@ PTErr BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize)
 //     else
 //     {
 //         return ((uint8_t*)realloc(p,total_memory_alloc));
-//     }      
+//     }
 //  }
  #define response_size 231
+
 PTErr BLESDA::ProcessBuffer(sda_over_ble_header* frag_sda){
     mbed_tracef(TRACE_LEVEL_INFO, TRACE_GROUP,"Processing buffer\r\n");
-    static uint8_t *msg_to_sda = NULL;
-    static uint16_t idx=0;
     //uint8_t response_size = 231;
     uint8_t response[response_size]={0};
     uint16_t sda_response_size=0;
-    if(frag_sda->frag_num == 1){
-        msg_to_sda = (uint8_t*)malloc(frag_sda->length/**sizeof(uint8_t)*/);
-        if(msg_to_sda==NULL){
-            mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP,"Could not allocate memoryfor message to sda");
-            return PT_ERR_MSG;
+    // if() {
+    //     msg_to_sda = (uint8_t*)malloc(frag_sda->length*sizeof(uint8_t));
+    //     if(msg_to_sda==NULL){
+    //         mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP,"Could not allocate memoryfor message to sda");
+    //         return PT_ERR_MSG;
+    //     }
+    //}
+    for(int i = 0 ; i < frag_sda->frag_length; i++){
+        msg_to_sda[idx]=frag_sda->payload[i];
+        idx++;
         }
-    }
-    memcpy(&msg_to_sda[idx],frag_sda->payload, frag_sda->frag_length);
+    //memcpy(&msg_to_sda[idx],frag_sda->payload, frag_sda->frag_length);
 
     if(frag_sda->more_frag == 1){
-       idx +=frag_sda->frag_length;
+       //idx +=frag_sda->frag_length;
+       return PT_ERR_OK;
     }
     else{
         idx = 0;
         mbed_tracef(TRACE_LEVEL_INFO,TRACE_GROUP,"Sending buffer to SDA\r\n");
+        for(int i = 0 ; i < frag_sda->frag_length; i++)
+            printf("%d ",msg_to_sda[i]);
         ProtocolTranslator* protocoltranslator = new ProtocolTranslator(msg_to_sda);
         PTErr status = protocoltranslator->init(response,response_size,&sda_response_size);
-        printf("sda :%d",sda_response_size);
-        for(int i = 0 ; i < sda_response_size; i++)
-            printf("%d ", response[i]);
-        if(status!=PT_ERR_OK){
-            return status;
-        }
-    delete protocoltranslator;
-    if(msg_to_sda!=NULL){
-        free(msg_to_sda);
-    }
-    return sda_fragment_datagram(response, sda_response_size); //try write here directly
+        printf("sdaR :%d ",sda_response_size);
+        // for(int i = 0 ; i < sda_response_size; i++)
+        //     printf("%d ", response[i]);
+        memset(msg_to_sda,0,frag_sda->frag_length*sizeof(uint8_t));
+        delete protocoltranslator;
+
+        return sda_fragment_datagram(response, sda_response_size); //try write here directly
     }
 }
 // PTErr BLESDA::processInputBuffer(uint8_t* msg_in, uint8_t numBytesReceived) {
@@ -249,30 +251,23 @@ PTErr BLESDA::ProcessBuffer(sda_over_ble_header* frag_sda){
 //         return status;
 //     }
 // }
-void BLESDA::onDataWritten(const GattWriteCallbackParams *params) {
+  void BLESDA::onDataWritten(const GattWriteCallbackParams *params) {
     printf("Data Received \r\n");
-    sda_over_ble_header buffer = {0};  
     if (params->handle == getTXCharacteristicHandle()) {
-        uint16_t bytesRead = params->len;
-        if (bytesRead <= BLE_UART_SERVICE_MAX_DATA_LEN) {
-            numBytesReceived   = bytesRead;
-            receiveBufferIndex = 0;
-             memcpy((uint8_t *)&buffer,(uint8_t *)&params->data[0],8);
-            buffer.payload = (uint8_t*)malloc(buffer.frag_length*sizeof(uint8_t));
-            if(buffer.payload==NULL){
-                    mbed_tracef(TRACE_ACTIVE_LEVEL_ERROR, TRACE_GROUP, "Could not allocate memory");
-                    return;
-            }
-            for(int i = 0 ; i < 8 ; i++)
-                printf("%d ",params->data[i]);
-            printf("F:%d T:%d %d %d \n",buffer.frag_length,buffer.length,sizeof(buffer.payload),sizeof(buffer.resv4));
-            memcpy(&(buffer.payload[0]), &params->data[8],buffer.frag_length);
-        }
-        PTErr status = ProcessBuffer(&buffer);
-         if(status!=PT_ERR_OK)
-        {
-            mbed_tracef(TRACE_ACTIVE_LEVEL_ERROR, TRACE_GROUP, "Unable to process SDA buffer");
-        }
-        free(buffer.payload);
+    // for(int i = 0 ; i < params->len; i++)
+    //     printf("%d ", params->data[i]);
+    sda_over_ble_header buffer;
+    memcpy(&buffer, params->data, 3);
+    buffer.length = ((params->data[3]<<8) | (params->data[4]));
+    buffer.payload = (uint8_t*)malloc(buffer.frag_length);
+    if(buffer.payload){
+        memcpy(buffer.payload, &params->data[START_DATA_BYTE],buffer.frag_length);
+    }
+    else{
+        return;
+    }
+    buffer.crc = params->data[buffer.frag_length+START_DATA_BYTE];
+
+    ProcessBuffer(&buffer);
     }
 }

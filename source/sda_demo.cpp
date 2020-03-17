@@ -102,7 +102,8 @@ void display_faulty_message(const char *fault_message)
 
 bool demo_callback_read_data(void)
 {
-    emulate_operation("read", LED_CL_BLUE, 10);
+    printf("In read");
+    //emulate_operation("read", LED_CL_BLUE, 10);
     return true;
 }
 
@@ -115,7 +116,7 @@ bool demo_callback_configure(int64_t temperature)
 
 bool demo_callback_update(void)
 {
-    emulate_operation("read", LED_CL_CYAN, 10);
+    //emulate_operation("read", LED_CL_CYAN, 10);
     return true;
 }
 

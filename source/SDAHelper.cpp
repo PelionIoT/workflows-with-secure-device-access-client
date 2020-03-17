@@ -84,7 +84,6 @@ bool process_request_fetch_response(const uint8_t *request,uint32_t request_size
 {
     //printf("Here in sda process fetch response\r\n");
     sda_status_e sda_status = SDA_STATUS_SUCCESS;
-
     //Call to sda_operation_process to process current message, the response message will be returned as output.
     sda_status = sda_operation_process(request, request_size, *application_callback, NULL, response, response_max_size, response_actual_size);
     if (sda_status != SDA_STATUS_SUCCESS) {
@@ -97,7 +96,6 @@ bool process_request_fetch_response(const uint8_t *request,uint32_t request_size
     else {
         return false;
     }
-
 }
 
 sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_param)
@@ -112,7 +110,7 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
     SDA_UNUSED_PARAM(callback_param);
 
     sda_status = sda_command_type_get(handle, &command_type);
-    printf("Here in application callback\r\n");
+    //printf("Here in application callback\r\n");
     if (sda_status != SDA_STATUS_SUCCESS) {
         tr_error("Secure-Device-Access failed getting command type (%u)", sda_status);
         sda_status_for_response = sda_status;
@@ -254,13 +252,13 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
 
     sda_status = sda_response_data_set(handle, g_app_user_response_buff, sizeof(g_app_user_response_buff));
     if (sda_status != SDA_STATUS_SUCCESS) {
-        tr_error("sda_response_data_set failed (%u)", sda_status);
+        printf("sda_response_data_set failed (%u)", sda_status);
         sda_status_for_response = sda_status;
         goto out;
     }
 
     // flow succeeded
-    tr_info("(%.*s) execution succeeded", (int)func_callback_name_size, func_callback_name);
+    //printf("(%.*s) execution succeeded", (int)func_callback_name_size, func_callback_name);
 out: 
 
     if ((sda_status_for_response != SDA_STATUS_SUCCESS) && (sda_status_for_response != SDA_STATUS_NO_MORE_SCOPES)) {

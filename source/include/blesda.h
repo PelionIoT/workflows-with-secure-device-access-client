@@ -161,8 +161,7 @@ public:
      * Flush sendBuffer, i.e., forcefully write its contents to the UART RX
      * characteristic even if the buffer is not full.
      */
-    void flush();
-    /**
+    void flush(uint8_t* buff, uint8_t length);    /**
      * Override for Stream::_putc().
      * @param  c
      *         This function writes the character c, cast to an unsigned char, to stream.
