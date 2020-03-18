@@ -18,9 +18,7 @@
 // from inttypes.h in a C++ code.
 #include "events/EventQueue.h"
 #include "include/BLEProcess.h"
-#include "include/comm_interface.h"
-
-#define TRACE_GROUP           "comm"
+#include "include/Comm_interface.h"
 
 bool Comm_interface::init(char* endpoint){
     BLE &ble_interface = BLE::Instance();

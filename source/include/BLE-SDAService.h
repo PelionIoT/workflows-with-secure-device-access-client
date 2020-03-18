@@ -15,12 +15,15 @@
  */
 #ifndef _BLE_SDA_SERVICE_H_
 #define _BLE_SDA_SERVICE_H_
-
 #include "events/EventQueue.h"
 #include "ble/UUID.h"
 #include "ble/BLE.h"
 #include "ble/pal/Deprecated.h"
-#include "protocoltranslator.h"
+#include "ProtocolTranslator.h"
+#include "mbed.h"
+#include "mbed_trace.h"
+
+#define TRACE_GROUP_BLE             "bleP"
 
 #define SERIAL_NUM_INDEX        0
 #define CONTROL_FRAME_INDEX     1
@@ -28,38 +31,38 @@
 #define UPPER_BYTE_REQ_INDEX    3
 #define LOWER_BYTE_REQ_INDEX    4
 #define START_DATA_BYTE         8
-#define BLE_MTU_SIZE  240
+#define BLE_MTU_SIZE            231
 #define SDA_DATA    1
 #define SDA_ACK 2
-
-enum blep_err_code{
-    ERR_OK,
-    ERR_RESEND_REQ,
-    ERR_CRC,
-    ERR_MSG_NULL,
-    ERR_MEMORY_OVERFLOW,
-};
-
+// enum blep_err_code{
+//     ERR_OK,
+//     ERR_RESEND_REQ,
+//     ERR_CRC,
+//     ERR_MSG_NULL,
+//     ERR_MEMORY_OVERFLOW,
+// };
 typedef struct _sda_over_ble_header {
 	 /* Frame sequence number(1byte) */
 	uint8_t seq_num;
-    /* control frame field (2byte) */
+    /* control frame field 12byte) */
 	uint8_t type:2;
     uint8_t more_frag:1;
 	uint8_t frag_num:3;
+        /* Frag length (1byte) */
+    uint8_t frag_length;
+    /* Total length (2byte) */
+    uint16_t length;
     uint8_t resv1:2;
 	uint8_t resv2;
     uint8_t resv3;
     uint16_t resv4;
-	 /* Total length (2byte) */
-    uint16_t length;
-    /* Frag length (1byte) */
-    uint8_t frag_length;
+
+
 	/* Payload */
     uint8_t* payload;
     /* CRC */
-    uint32_t crc;
-}sda_over_ble_header __attribute__((__packed__));
+    uint8_t crc;
+}__attribute__((packed)) sda_over_ble_header;
 
 
 
@@ -100,17 +103,10 @@ public:
     BLESDA(events::EventQueue &event_queue, BLE &_ble, char* endpointbuffer) :
         _event_queue(event_queue),
         ble(_ble),
-        receiveBuffer(),
-        sendBuffer(),
-        sendBufferIndex(0),
-        numBytesReceived(0),
-        receiveBufferIndex(0),
         _endpointBuffer(endpointbuffer),
-        _index(0),
-        txCharacteristic(UARTServiceTXCharacteristicUUID, receiveBuffer, 1, BLE_UART_SERVICE_MAX_DATA_LEN,
+        txCharacteristic(UARTServiceTXCharacteristicUUID, NULL, 1, BLE_UART_SERVICE_MAX_DATA_LEN,
                          GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE_WITHOUT_RESPONSE),
-        rxCharacteristic(UARTServiceRXCharacteristicUUID, sendBuffer, 1, BLE_UART_SERVICE_MAX_DATA_LEN, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY),
-        _total_req_size(0)
+        rxCharacteristic(UARTServiceRXCharacteristicUUID, NULL, 1, BLE_UART_SERVICE_MAX_DATA_LEN, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY)
         {
             GattCharacteristic *charTable[] = {&txCharacteristic, &rxCharacteristic};
             GattService SDAService(UARTServiceUUID, charTable, sizeof(charTable) / sizeof(GattCharacteristic *));
@@ -129,43 +125,10 @@ public:
     const uint8_t* getUUID(){
         return UARTServiceUUID;
     }
-    blep_err_code BLEHeaderTX(sda_over_ble_header* header, uint8_t len);
-    /**
-     * We attempt to collect bytes before pushing them to the UART RX
-     * characteristic; writing to the RX characteristic then generates
-     * notifications for the client. Updates made in quick succession to a
-     * notification-generating characteristic result in data being buffered
-     * in the Bluetooth stack as notifications are sent out. The stack has
-     * its limits for this buffering - typically a small number under 10.
-     * Collecting data into the sendBuffer buffer helps mitigate the rate of
-     * updates. But we shouldn't buffer a large amount of data before updating
-     * the characteristic, otherwise the client needs to turn around and make
-     * a long read request; this is because notifications include only the first
-     * 20 bytes of the updated data.
-     *
-     * @param  _buffer The received update.
-     * @param  length Number of characters to be appended.
-     * @return        Number of characters appended to the rxCharacteristic.
-     */
-    size_t write(const void *_buffer, size_t length);
-    /**
-     * Helper function to write out strings.
-     * @param  str The received string.
-     * @return     Number of characters appended to the rxCharacteristic.
-     */
-    size_t writeString(const char *str);
-    /**
-     * Flush sendBuffer, i.e., forcefully write its contents to the UART RX
-     * characteristic even if the buffer is not full.
-     */
-    void flush();
-    /**
-     * Override for Stream::_putc().
-     * @param  c
-     *         This function writes the character c, cast to an unsigned char, to stream.
-     * @return
-     *     The character written as an unsigned char cast to an int or EOF on error.
-     */
+    PTErr BLEHeaderTX(sda_over_ble_header* header, uint8_t len);
+
+    size_t write(uint8_t *_buffer, uint8_t length);
+
     int _putc(int c);
     /**
      * Override for Stream::_getc().
@@ -185,25 +148,17 @@ public:
     This callback allows the connecting device to fetch the endpoint of the device so that it can proceed further.
     */
     void onDataRead(const GattReadCallbackParams *params);
-    blep_err_code ProcessBuffer(sda_over_ble_header* frag_sda, uint16_t len);
-    blep_err_code sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize);
-    blep_err_code processInputBuffer(uint8_t* msg_in);
+    PTErr ProcessBuffer(sda_over_ble_header* frag_sda);
+    PTErr sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize);
+    PTErr processInputBuffer(uint8_t* msg_in, uint16_t bytesRecieved);
+
 private:
-    BLE                 &ble;                                           //BLe instance
-    uint16_t             _index;
-    uint8_t              receiveBuffer[BLE_UART_SERVICE_MAX_DATA_LEN]; /**   The local buffer into which we receive
-                                                                       *    inbound data before forwarding it to the
-                                                                       *    application.     */
-    uint8_t              sendBuffer[BLE_UART_SERVICE_MAX_DATA_LEN];      /** The local buffer into which outbound data is
-                                                                        *   accumulated before being pushed to the
-                                                                        *   rxCharacteristic. */
-    char*               _endpointBuffer;                            /*  The local buffer that contains the endpoint of
-                                                                        the device.       */
+    //Thread t;
     events::EventQueue &_event_queue;
-    uint8_t             sendBufferIndex;
-    uint8_t             numBytesReceived;
-    uint8_t             receiveBufferIndex;
-    uint16_t            _total_req_size;
+    BLE                 &ble;                                           //  BLe instance
+    char*               _endpointBuffer;                                /*  The local buffer that contains the endpoint of
+                                                                        the device.       */
+    uint8_t*            msg_to_sda;
     GattCharacteristic  txCharacteristic;                               /**< From the point of view of the external client, this is the characteristic
                                                                         *   they'd write into in order to communicate with this application. */
     GattCharacteristic  rxCharacteristic;                               /**< From the point of view of the external client, this is the characteristic

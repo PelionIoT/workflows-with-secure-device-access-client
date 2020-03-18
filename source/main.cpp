@@ -29,8 +29,8 @@
 #include "mbed_stats_helper.h"
 #include <string>
 #include "include/BLEProcess.h"
-#include "include/comm_interface.h"
-#include "include/sdahelper.h"
+#include "include/Comm_interface.h"
+#include "include/SDAHelper.h"
 #include "BlockDevice.h"
 #include "LittleFileSystem.h"
 

@@ -27,7 +27,7 @@
 #include "ble/GapAdvertisingParams.h"
 #include "ble/GapAdvertisingData.h"
 #include "ble/FunctionPointerWithContext.h"
-#include "blesda.h"
+#include "BLE-SDAService.h"
 
 
 
@@ -88,10 +88,10 @@ private:
     char* getBuff();
     void wait();
     //char* _endpoint;
-    char* _endpoint;
     events::EventQueue &_event_queue;
-    BLESDA* _blesda;
     BLE &_ble_interface;
+    char* _endpoint;
+    BLESDA* _blesda;
     mbed::Callback<void(BLE&, events::EventQueue&)> _post_init_cb;
 };
 

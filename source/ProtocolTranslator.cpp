@@ -14,28 +14,22 @@
  * limitations under the License.
  */
 
-#include "include/protocoltranslator.h"
-#include "mbed-trace/mbed_trace.h"
+#include "include/ProtocolTranslator.h"
 #include "pv_endian.h"
 #include "cs_hash.h"
 #include "kcm_defs.h"
-#include "sdahelper.h"
+#include "SDAHelper.h"
 
-#define TRACE_GROUP "PT"
+#define TRACE_GROUP_PT "PT"
 
 size_t ProtocolTranslator::_read(uint8_t* message, size_t message_size){
     if(memcpy(message, &_buffer[START_DATA],message_size)==NULL){
-        mbed_tracef(TRACE_ACTIVE_LEVEL_ERROR, TRACE_GROUP,"Can not read message");
+        mbed_tracef(TRACE_ACTIVE_LEVEL_ERROR, TRACE_GROUP_PT,"Can not read message");
         return MBED_ERROR_ALLOC_FAILED;
     }
     _index +=message_size;
     return message_size;
 }
-
-size_t ProtocolTranslator::_write(uint8_t* message, size_t message_size){
-   // return _blesdahandler->write(message, message_size);
-}
-
 
 PTErr ProtocolTranslator::is_token_detected(){
     for(int i = 0; i< FTCD_MSG_HEADER_TOKEN_SIZE_BYTES; i++) {
@@ -74,33 +68,31 @@ PTErr ProtocolTranslator::init(uint8_t* response, uint8_t response_max_size, uin
     // }
     PTErr status = is_token_detected();
     if(status != PT_ERR_OK){
-        mbed_tracef(TRACE_ACTIVE_LEVEL_INFO,TRACE_GROUP,"Token not detected");
+        mbed_tracef(TRACE_LEVEL_INFO,TRACE_GROUP_PT,"Token not detected");
         return status;
     }
     _message_size = read_message_size();
-    mbed_tracef(TRACE_ACTIVE_LEVEL_INFO,TRACE_GROUP, "message siz %d",_message_size);
     uint8_t* msg = (uint8_t*)malloc(_message_size);
     if(msg==NULL){
-        printf("can not init msg");
-        mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP,"Can not init message to process SDA");
+        mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP_PT,"Can not init message to process SDA");
         return PT_ERR_MSG;
     }
     if(read_message(msg,_message_size)!=PT_ERR_OK) {
-        mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP, "not able to get message %d",_message_size);
+        mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP_PT, "not able to get message %ld",_message_size);
         free(msg);
         return PT_ERR_MSG;
     }
     uint8_t sig_from_message[KCM_SHA256_SIZE];
     status = read_message_signature(sig_from_message, sizeof(sig_from_message));
     if(status != PT_ERR_OK) {
-        printf("err reading msg sig");
-        mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP, "err reading message");
+        //printf("err reading msg sig");
+        mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP_PT, "err reading message");
         free(msg);
         return status;
     }
     bool success = process_request_fetch_response(msg, _message_size, response, response_max_size, &response_actual_size);
         if (!success) {
-            tr_error("Failed processing request message");
+            mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP_PT,"Failed processing request message");
             free(msg);
             return  PT_ERR_PROCESS_REQ;
         }
@@ -113,20 +105,20 @@ PTErr ProtocolTranslator::init(uint8_t* response, uint8_t response_max_size, uin
         PTErr status_code;
         kcm_status = cs_hash(CS_SHA256, msg, _message_size, self_calculated_sig, sizeof(self_calculated_sig));
         if (kcm_status != KCM_STATUS_SUCCESS) {
-            printf("failed calculating msg sig");
-            mbed_tracef(TRACE_LEVEL_CMD, TRACE_GROUP, "Failed calculating message signature");
+            //printf("failed calculating msg sig");
+            mbed_tracef(TRACE_LEVEL_CMD, TRACE_GROUP_PT, "Failed calculating message signature");
             status_code = PT_ERR_FAILED_TO_CALCULATE_MESSAGE_SIG;
             free(msg);
             return status_code;
         }
 
     //compare signatures
-        // if (memcmp(self_calculated_sig, sig_from_message, KCM_SHA256_SIZE) != 0) {
-        //     mbed_tracef(TRACE_LEVEL_CMD, TRACE_GROUP, "Inconsistent message signature");
-        //     status_code = PT_ERR_INCONSISTENT_MESSAGE_SIG;
-        //     free(msg);
-        //     return status_code;
-        // }
+        if (memcmp(self_calculated_sig, sig_from_message, KCM_SHA256_SIZE) != 0) {
+            mbed_tracef(TRACE_LEVEL_CMD, TRACE_GROUP_PT, "Inconsistent message signature");
+            status_code = PT_ERR_INCONSISTENT_MESSAGE_SIG;
+            free(msg);
+            return status_code;
+        }
     free(msg);
     return PT_ERR_OK;
 }

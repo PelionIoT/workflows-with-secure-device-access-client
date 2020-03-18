@@ -16,7 +16,7 @@
 
 // Note: this macro is needed on armcc to get the the PRI*32 macros
 // from inttypes.h in a C++ code.
-#include "sdahelper.h"
+#include "SDAHelper.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "blesda.h"
+#include "BLE-SDAService.h"
 #ifndef _PROTOCOL_TRANSLATOR_H_
 #define _PROTOCOL_TRANSLATOR_H_
 
@@ -37,6 +37,8 @@ enum PTErr{
     PT_ERR_FAILED_TO_CALCULATE_MESSAGE_SIG,
     PT_ERR_INCONSISTENT_MESSAGE_SIG,
     PT_ERR_BAD_REQ,
+    PT_ERR_SEND_BLE,
+    PT_ERR_WRITE_BLE
 };
 class ProtocolTranslator{
     public:
@@ -50,13 +52,11 @@ class ProtocolTranslator{
         PTErr read_message_signature(uint8_t* message, size_t message_size);
 
     private:
+        size_t _read(uint8_t* buffer, size_t message_size);
+        uint8_t _message_header[FTCD_MSG_HEADER_TOKEN_SIZE_BYTES];
         int _index;
         uint32_t _message_size;
-        size_t _read(uint8_t* buffer, size_t message_size);
-        size_t _write(uint8_t* buffer, size_t message_size);
         uint8_t* _buffer;
-        uint8_t _message_header[FTCD_MSG_HEADER_TOKEN_SIZE_BYTES];
-        bool _use_signature;
 };
 
 #endif
