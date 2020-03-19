@@ -26,5 +26,5 @@ bool demo_callback_read_data(void);
 bool demo_callback_update(void);
 bool demo_callback_restart(void);
 bool demo_callback_diagnostics(void);
-
+bool demo_callback_fetchdata(uint8_t*);
 #endif //__SDA_DEMO_H__

@@ -56,6 +56,9 @@ DigitalOut led_blue(LED_BLUE, LED_OFF);
 
 //////////////////////////////////////////////////////////
 
+BlockDevice *bd = BlockDevice::get_default_instance();
+LittleFileSystem fs("fs");
+
 static void set_led_color(uint32_t color)
 {
     // extract bits from bitfield
@@ -104,7 +107,42 @@ bool demo_callback_read_data(void)
 {
     printf("In read");
     //emulate_operation("read", LED_CL_BLUE, 10);
+
+    BlockDevice *bd = BlockDevice::get_default_instance();
+    LittleFileSystem fs("fs");
+    int err = fs.mount(bd);
+    printf("%s\n", (err ? "Fail :(" : "OK"));
+    if (err) {
+        // Reformat if we can't mount the filesystem
+        // this should only happen on the first boot
+        printf("No filesystem found, formatting... ");
+        fflush(stdout);
+        err = fs.reformat(bd);
+        printf("%s\n", (err ? "Fail :(" : "OK"));
+        if (err) {
+            error("error: %s (%d)\n", strerror(-err), err);
+        }
+    }
+    printf("Writing file");
+    FILE* f = fopen("/fs/pb.txt", "w+");
+    if(f==NULL) {
+        return false;
+    }
+    fprintf(f,"Hello Prakhar \r\n");
+    fflush(f);
+    fclose(f);
+    FILE* r = fopen("/fs/pb.txt", "r");
+    if(r==NULL)return false;
+    tr_error("File read starting");
+    int c;
+    while((c = fgetc(r)) != EOF) {
+        putchar(c);
+    }
+    fflush(r);
+    fclose(r);
+    tr_error("File read complete");
     return true;
+
 }
 
 bool demo_callback_configure(int64_t temperature)
@@ -113,7 +151,10 @@ bool demo_callback_configure(int64_t temperature)
     tr_error("Outside temperature: 28");
     return true;
 }
+bool demo_callback_fetchdata(uint8_t* param_data)
+{
 
+}
 bool demo_callback_update(void)
 {
     //emulate_operation("read", LED_CL_CYAN, 10);

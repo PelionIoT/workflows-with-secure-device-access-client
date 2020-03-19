@@ -6,3 +6,5 @@ mbed-os
 mbed_cloud_client_user_config.h
 mbed-cloud-client-platform-common
 mbed-cloud-client
+.vscode
+mbed_config.h

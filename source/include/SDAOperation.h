@@ -24,7 +24,7 @@
 #define HEADER_START            0
 #define HEADER_BYTE             11
 #define START_DATA              12
-enum PTErr{
+enum sda_protocol_error_t{
     PT_ERR_OK,
     PT_ERR_HEADER_MISMATCH,
     PT_ERR_MSG,
@@ -40,16 +40,16 @@ enum PTErr{
     PT_ERR_SEND_BLE,
     PT_ERR_WRITE_BLE
 };
-class ProtocolTranslator{
+class SDAOperation{
     public:
-        ProtocolTranslator(uint8_t* request)://_buffer = request;
+        SDAOperation(uint8_t* request)://_buffer = request;
         _message_header(FTCD_MSG_HEADER_TOKEN_SDA),_index(0),_message_size(0),_buffer(request) {
         };
-        PTErr init(uint8_t* response,uint8_t response_max_size, uint16_t* response_size);
-        PTErr is_token_detected();
+        sda_protocol_error_t init(uint8_t* response,uint8_t response_max_size, uint16_t* response_size);
+        sda_protocol_error_t is_token_detected();
         uint32_t read_message_size();
-        PTErr read_message(uint8_t* message, uint32_t message_size);
-        PTErr read_message_signature(uint8_t* message, size_t message_size);
+        sda_protocol_error_t read_message(uint8_t* message, uint32_t message_size);
+        sda_protocol_error_t read_message_signature(uint8_t* message, size_t message_size);
 
     private:
         size_t _read(uint8_t* buffer, size_t message_size);

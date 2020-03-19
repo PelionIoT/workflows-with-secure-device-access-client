@@ -68,8 +68,29 @@ static void demo_main(){
         tr_error("Failed initializing Secure-Device-Access");
         display_faulty_message("Init. failed");
     }
-
-	Comm_interface* comm_interface = new Comm_interface();
+//     BlockDevice *bd = BlockDevice::get_default_instance();
+//     LittleFileSystem fs("fs");
+//  {
+//         FILE* f = fopen("/fs/test.txt", "r");
+//         if(f != NULL)
+//         {
+//             printf("/fs/test.txt contains:\r\n");
+//             int c;
+//             while((c = fgetc(f)) != EOF) {
+//                 putchar(c);
+//             }
+//             fflush(f);
+//             fclose(f);
+//             printf("\r\n");
+//         }
+//     }
+//     {
+//     FILE* f = fopen("/fs/test.txt", "w+");
+//     fprintf(f, "test Scout :)\r\n");
+//     fflush(f);
+//     fclose(f);
+//     }
+    Comm_interface* comm_interface = new Comm_interface();
     if(comm_interface == NULL){
         tr_error("Can not initiate ble interface");
         return;
@@ -83,6 +104,7 @@ static void demo_main(){
 int main(void) {
 
     printf("Startup\r\n");
+
 	bool success = mbed_trace_helper_init(TRACE_ACTIVE_LEVEL_ALL | TRACE_MODE_COLOR, false);
     if (!success) {
         return EXIT_FAILURE;

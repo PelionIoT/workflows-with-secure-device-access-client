@@ -19,9 +19,10 @@
 #include "ble/UUID.h"
 #include "ble/BLE.h"
 #include "ble/pal/Deprecated.h"
-#include "ProtocolTranslator.h"
+#include "SDAOperation.h"
 #include "mbed.h"
 #include "mbed_trace.h"
+#include "./../../ble-config-uuid.h"
 
 #define TRACE_GROUP_BLE             "bleP"
 
@@ -34,13 +35,7 @@
 #define BLE_MTU_SIZE            231
 #define SDA_DATA    1
 #define SDA_ACK 2
-// enum blep_err_code{
-//     ERR_OK,
-//     ERR_RESEND_REQ,
-//     ERR_CRC,
-//     ERR_MSG_NULL,
-//     ERR_MEMORY_OVERFLOW,
-// };
+
 typedef struct _sda_over_ble_header {
 	 /* Frame sequence number(1byte) */
 	uint8_t seq_num;
@@ -64,33 +59,6 @@ typedef struct _sda_over_ble_header {
     uint8_t crc;
 }__attribute__((packed)) sda_over_ble_header;
 
-
-
-const uint8_t  UARTServiceBaseUUID[UUID::LENGTH_OF_LONG_UUID] = {
-    0x6E, 0x40, 0x00, 0x00, 0xB5, 0xA3, 0xF3, 0x93,
-    0xE0, 0xA9, 0xE5, 0x0E, 0x24, 0xDC, 0xCA, 0x9E,
-};
-const uint16_t UARTServiceShortUUID                 = 0x0001;
-const uint16_t UARTServiceTXCharacteristicShortUUID = 0x0002;
-const uint16_t UARTServiceRXCharacteristicShortUUID = 0x0003;
-const uint8_t  UARTServiceUUID[UUID::LENGTH_OF_LONG_UUID] = {
-    0x6E, 0x40, (uint8_t)(UARTServiceShortUUID >> 8), (uint8_t)(UARTServiceShortUUID & 0xFF), 0xB5, 0xA3, 0xF3, 0x93,
-    0xE0, 0xA9, 0xE5, 0x0E, 0x24, 0xDC, 0xCA, 0x9E,
-};
-const uint8_t  UARTServiceUUID_reversed[UUID::LENGTH_OF_LONG_UUID] = {
-    0x9E, 0xCA, 0xDC, 0x24, 0x0E, 0xE5, 0xA9, 0xE0,
-    0x93, 0xF3, 0xA3, 0xB5, (uint8_t)(UARTServiceShortUUID & 0xFF), (uint8_t)(UARTServiceShortUUID >> 8), 0x40, 0x6E
-};
-const uint8_t  UARTServiceTXCharacteristicUUID[UUID::LENGTH_OF_LONG_UUID] = {
-    0x6E, 0x40, (uint8_t)(UARTServiceTXCharacteristicShortUUID >> 8), (uint8_t)(UARTServiceTXCharacteristicShortUUID & 0xFF), 0xB5, 0xA3, 0xF3, 0x93,
-    0xE0, 0xA9, 0xE5, 0x0E, 0x24, 0xDC, 0xCA, 0x9E,
-};
-const uint8_t  UARTServiceRXCharacteristicUUID[UUID::LENGTH_OF_LONG_UUID] = {
-    0x6E, 0x40, (uint8_t)(UARTServiceRXCharacteristicShortUUID >> 8), (uint8_t)(UARTServiceRXCharacteristicShortUUID & 0xFF), 0xB5, 0xA3, 0xF3, 0x93,
-    0xE0, 0xA9, 0xE5, 0x0E, 0x24, 0xDC, 0xCA, 0x9E,
-};
-
-
 class BLESDA {
 public:
     /** Maximum length of data (in bytes) that the UART service module can transmit to the peer. */
@@ -104,28 +72,29 @@ public:
         _event_queue(event_queue),
         ble(_ble),
         _endpointBuffer(endpointbuffer),
-        txCharacteristic(UARTServiceTXCharacteristicUUID, NULL, 1, BLE_UART_SERVICE_MAX_DATA_LEN,
-                         GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE_WITHOUT_RESPONSE),
-        rxCharacteristic(UARTServiceRXCharacteristicUUID, NULL, 1, BLE_UART_SERVICE_MAX_DATA_LEN, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY)
+        sdaCharacteristic(ServiceCharacteristicUUID, NULL, 1, BLE_UART_SERVICE_MAX_DATA_LEN,
+                         GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE_WITHOUT_RESPONSE
+                         |GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY)
         {
-            GattCharacteristic *charTable[] = {&txCharacteristic, &rxCharacteristic};
-            GattService SDAService(UARTServiceUUID, charTable, sizeof(charTable) / sizeof(GattCharacteristic *));
+            GattCharacteristic *charTable[] = {&sdaCharacteristic};
+            GattService SDAService(ServiceUUID, charTable, sizeof(charTable) / sizeof(GattCharacteristic *));
             ble.gattServer().addService(SDAService);
             ble.gattServer().onDataWritten(this, &BLESDA::onDataWritten);
         }
     /**
      * Note: TX and RX characteristics are to be interpreted from the viewpoint of the GATT client using this service.
      */
-    uint16_t getTXCharacteristicHandle();
+    uint16_t getCharacteristicHandle();
     /**
      * Note: TX and RX characteristics are to be interpreted from the viewpoint of the GATT client using this service.
      */
-    uint16_t getRXCharacteristicHandle();
+    //uint16_t getCharacteristicHandle();
     /*Need UUID of the service so that we can advertise that in the advertisement */
     const uint8_t* getUUID(){
-        return UARTServiceUUID;
+        return ServiceUUID;
     }
-    PTErr BLEHeaderTX(sda_over_ble_header* header, uint8_t len);
+
+    sda_protocol_error_t BLETX(sda_over_ble_header* header, uint8_t len);
 
     size_t write(uint8_t *_buffer, uint8_t length);
 
@@ -148,9 +117,9 @@ public:
     This callback allows the connecting device to fetch the endpoint of the device so that it can proceed further.
     */
     void onDataRead(const GattReadCallbackParams *params);
-    PTErr ProcessBuffer(sda_over_ble_header* frag_sda);
-    PTErr sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize);
-    PTErr processInputBuffer(uint8_t* msg_in, uint16_t bytesRecieved);
+    sda_protocol_error_t ProcessBuffer(sda_over_ble_header* frag_sda);
+    sda_protocol_error_t sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize);
+    sda_protocol_error_t processInputBuffer(uint8_t* msg_in, uint16_t bytesRecieved);
 
 private:
     //Thread t;
@@ -158,11 +127,11 @@ private:
     BLE                 &ble;                                           //  BLe instance
     char*               _endpointBuffer;                                /*  The local buffer that contains the endpoint of
                                                                         the device.       */
-    uint8_t*            msg_to_sda;
-    GattCharacteristic  txCharacteristic;                               /**< From the point of view of the external client, this is the characteristic
+    uint8_t*            msg_to_sda = NULL;
+    GattCharacteristic  sdaCharacteristic;                               /**< From the point of view of the external client, this is the characteristic
                                                                         *   they'd write into in order to communicate with this application. */
-    GattCharacteristic  rxCharacteristic;                               /**< From the point of view of the external client, this is the characteristic
-                                                                        *   they'd read from in order to receive the bytes transmitted by this
-                                                                        *   application. */
+    // GattCharacteristic  Characteristic;                               /**< From the point of view of the external client, this is the characteristic
+    //                                                                     *   they'd read from in order to receive the bytes transmitted by this
+    //                                                                     *   application. */
 };
 #endif

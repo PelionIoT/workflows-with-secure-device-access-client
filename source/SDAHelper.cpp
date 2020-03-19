@@ -46,6 +46,7 @@ extern const char MBED_CLOUD_TRUST_ANCHOR_PK_NAME[];
 char *g_endpoint_name = NULL;
 
 static uint8_t g_app_user_response_buff[] = "This is app data buffer";
+size_t size = 0;
 
 
 char* get_endpoint_name(){
@@ -169,16 +170,30 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
 
         int64_t temperature = 0;
 
-        // Get the temperature to display
-        sda_status = sda_func_call_numeric_parameter_get(handle, 0, &temperature);
+        // // Get the temperature to display
+        // sda_status = sda_func_call_numeric_parameter_get(handle, 0, &temperature);
+        // if (sda_status != SDA_STATUS_SUCCESS) {
+        //     tr_error("Failed getting demo_callback_configure() numeric param[0] (%u)", sda_status);
+        //     sda_status_for_response = sda_status;
+        //     goto out;
+        // }
+
+        const uint8_t** param_data = (const uint8_t**)calloc(10, sizeof(uint8_t*));
+        sda_status = sda_func_call_data_parameter_get(handle, 0, param_data, &size);
+        uint8_t arr[size];
+        for(int i=0; i< size; i++){
+            //tr_error("%d",param_data[0][i]);
+            arr[i] = param_data[0][i];
+            }
         if (sda_status != SDA_STATUS_SUCCESS) {
-            tr_error("Failed getting demo_callback_configure() numeric param[0] (%u)", sda_status);
+            tr_error("Failed getting demo_callback_configure() data param[0] (%u)", sda_status);
             sda_status_for_response = sda_status;
             goto out;
         }
 
+        free(param_data);
         // Dispatch function callback
-        success = demo_callback_configure(temperature);
+        success = demo_callback_fetchdata(arr);
         if (!success) {
             tr_error("demo_callback_configure() failed");
             sda_status_for_response = SDA_STATUS_OPERATION_EXECUTION_ERROR;
