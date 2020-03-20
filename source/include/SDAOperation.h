@@ -38,7 +38,8 @@ enum sda_protocol_error_t{
     PT_ERR_INCONSISTENT_MESSAGE_SIG,
     PT_ERR_BAD_REQ,
     PT_ERR_SEND_BLE,
-    PT_ERR_WRITE_BLE
+    PT_ERR_WRITE_BLE,
+    PT_ERR_SDA_REQ,
 };
 class SDAOperation{
     public:

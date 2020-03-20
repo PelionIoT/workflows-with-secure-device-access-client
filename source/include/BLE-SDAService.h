@@ -33,8 +33,9 @@
 #define LOWER_BYTE_REQ_INDEX    4
 #define START_DATA_BYTE         8
 #define BLE_MTU_SIZE            231
-#define SDA_DATA    1
-#define SDA_ACK 2
+#define SDA_DATA                1
+#define SDA_ACK                 3
+#define SDA_REQ                 2
 
 typedef struct _sda_over_ble_header {
 	 /* Frame sequence number(1byte) */
@@ -118,11 +119,13 @@ public:
     */
     void onDataRead(const GattReadCallbackParams *params);
     sda_protocol_error_t ProcessBuffer(sda_over_ble_header* frag_sda);
-    sda_protocol_error_t sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize);
+    sda_protocol_error_t sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize, uint8_t type);
     sda_protocol_error_t processInputBuffer(uint8_t* msg_in, uint16_t bytesRecieved);
+    sda_protocol_error_t processRequest(sda_over_ble_header* frag_sda);
 
 private:
     //Thread t;
+    char* getEndpoint();
     events::EventQueue &_event_queue;
     BLE                 &ble;                                           //  BLe instance
     char*               _endpointBuffer;                                /*  The local buffer that contains the endpoint of

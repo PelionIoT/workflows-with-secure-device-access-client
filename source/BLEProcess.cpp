@@ -130,6 +130,7 @@ void BLEProcess::when_connection(const Gap::ConnectionCallbackParams_t *connecti
 void BLEProcess::when_disconnection(const Gap::DisconnectionCallbackParams_t *event)
 {
     printf("Disconnected.\r\n");
+    delete _blesda;
     start_advertising();
 }
 
