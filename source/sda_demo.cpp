@@ -56,8 +56,6 @@ DigitalOut led_blue(LED_BLUE, LED_OFF);
 
 //////////////////////////////////////////////////////////
 
-BlockDevice *bd = BlockDevice::get_default_instance();
-LittleFileSystem fs("fs");
 
 static void set_led_color(uint32_t color)
 {
@@ -103,46 +101,96 @@ void display_faulty_message(const char *fault_message)
     emulate_operation(NULL, LED_CL_RED, 10);
 }
 
-bool demo_callback_read_data(void)
-{
-    printf("In read");
-    //emulate_operation("read", LED_CL_BLUE, 10);
+// path+content
+bool demo_callback_writedata(uint8_t* data) {
+    char* token;
+    token = strtok((char*)data,"^");
 
-    BlockDevice *bd = BlockDevice::get_default_instance();
-    LittleFileSystem fs("fs");
-    int err = fs.mount(bd);
-    printf("%s\n", (err ? "Fail :(" : "OK"));
-    if (err) {
-        // Reformat if we can't mount the filesystem
-        // this should only happen on the first boot
-        printf("No filesystem found, formatting... ");
-        fflush(stdout);
-        err = fs.reformat(bd);
-        printf("%s\n", (err ? "Fail :(" : "OK"));
-        if (err) {
-            error("error: %s (%d)\n", strerror(-err), err);
-        }
+    char *final_path = (char*)calloc((strlen(token)+4),sizeof(char));
+    sprintf(final_path,"/fs/%s",(char*)token);
+    printf("final-path:%s\n",final_path)
+    tr_info("Writing file\n");
+    FILE* f = fopen(final_path, "w");
+    if(f!=NULL) {
+        token=strtok(NULL, "^");
+        printf("%s",token);
+        fprintf(f,"%s\r\n", (const char*)token);
+        fflush(f);
+        fclose(f);
+        free(final_path);
+        //memset(final_path, 0, strlen((const char*)token)+4);
+        token = NULL;
+        return true;
     }
-    printf("Writing file");
-    FILE* f = fopen("/fs/pb.txt", "w+");
-    if(f==NULL) {
+    else{
+        free(final_path);
         return false;
     }
-    fprintf(f,"Hello Prakhar \r\n");
-    fflush(f);
-    fclose(f);
-    FILE* r = fopen("/fs/pb.txt", "r");
-    if(r==NULL)return false;
-    tr_error("File read starting");
-    int c;
-    while((c = fgetc(r)) != EOF) {
-        putchar(c);
+}
+// response pointer should be allocated bedore calling this function
+bool demo_callback_read_data(uint8_t* path, char* response)
+{
+    if((path == NULL) || (*path == ' ')){
+        tr_error("Please provide the path of the file");
+        return false;
     }
+    uint8_t path_len = strlen((const char*)path)+4;
+    char final_path[path_len];
+    // if(final_path==NULL){
+    //     tr_error("Can not allocate memory of final_path");
+    //     return false;
+    // }
+    sprintf(final_path,"/fs/%s",(char*)path);
+    printf("Final path:%s",final_path);
+    FILE* r = fopen(final_path, "r");
+    if(!r){
+        printf("Can not open file");
+        return false;
+        }
+    printf("File read starting");
+    fscanf(r, "%[^\n]", response);
     fflush(r);
     fclose(r);
-    tr_error("File read complete");
+    tr_info("File read complete");
+    //free(final_path);
+    //final_path = NULL;
+    memset(final_path, 0, strlen((const char*)path)+4);
     return true;
+    // //emulate_operation("read", LED_CL_BLUE, 10);
 
+    // BlockDevice *bd = BlockDevice::get_default_instance();
+    // LittleFileSystem fs("fs");
+    // int err = fs.mount(bd);
+    // printf("%s\n", (err ? "Fail :(" : "OK"));
+    // if (err) {
+    //     // Reformat if we can't mount the filesystem
+    //     // this should only happen on the first boot
+    //     printf("No filesystem found, formatting... ");
+    //     fflush(stdout);
+    //     err = fs.reformat(bd);
+    //     printf("%s\n", (err ? "Fail :(" : "OK"));
+    //     if (err) {
+    //         error("error: %s (%d)\n", strerror(-err), err);
+    //     }
+    // }
+    // printf("Writing file");
+    // FILE* f = fopen("/fs/pb.txt", "w+");
+    // if(f==NULL) {
+    //     return false;
+    // }
+    // fprintf(f,"Hello Prakhar \r\n");
+    // fflush(f);
+    // fclose(f);
+    // FILE* r = fopen("/fs/pb.txt", "r");
+    // if(r==NULL)return false;
+    // tr_error("File read starting");
+    // int c;
+    // while((c = fgetc(r)) != EOF) {
+    //     putchar(c);
+    // }
+    // fflush(r);
+    // fclose(r);
+    // tr_error("File read complete");
 }
 
 bool demo_callback_configure(int64_t temperature)
@@ -151,10 +199,7 @@ bool demo_callback_configure(int64_t temperature)
     tr_error("Outside temperature: 28");
     return true;
 }
-bool demo_callback_fetchdata(uint8_t* param_data)
-{
 
-}
 bool demo_callback_update(void)
 {
     //emulate_operation("read", LED_CL_CYAN, 10);

@@ -22,9 +22,9 @@
 void demo_setup(void);
 void display_faulty_message(const char *fault_message);
 bool demo_callback_configure(int64_t temperature);
-bool demo_callback_read_data(void);
+bool demo_callback_read_data(uint8_t* path, char* response);
 bool demo_callback_update(void);
 bool demo_callback_restart(void);
 bool demo_callback_diagnostics(void);
-bool demo_callback_fetchdata(uint8_t*);
+bool demo_callback_writedata(uint8_t*);
 #endif //__SDA_DEMO_H__

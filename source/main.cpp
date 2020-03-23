@@ -40,6 +40,8 @@ using mbed::callback;
 
 static int g_demo_main_status = EXIT_FAILURE;   // holds the demo main task return code
 
+BlockDevice *bd = BlockDevice::get_default_instance();
+LittleFileSystem fs("fs");
 
 static void demo_main(){
 	mcc_platform_sw_build_info();
@@ -68,28 +70,16 @@ static void demo_main(){
         tr_error("Failed initializing Secure-Device-Access");
         display_faulty_message("Init. failed");
     }
-//     BlockDevice *bd = BlockDevice::get_default_instance();
-//     LittleFileSystem fs("fs");
-//  {
-//         FILE* f = fopen("/fs/test.txt", "r");
-//         if(f != NULL)
-//         {
-//             printf("/fs/test.txt contains:\r\n");
-//             int c;
-//             while((c = fgetc(f)) != EOF) {
-//                 putchar(c);
-//             }
-//             fflush(f);
-//             fclose(f);
-//             printf("\r\n");
-//         }
-//     }
-//     {
-//     FILE* f = fopen("/fs/test.txt", "w+");
-//     fprintf(f, "test Scout :)\r\n");
-//     fflush(f);
-//     fclose(f);
-//     }
+    int err = fs.mount(bd);
+    if (err) {
+        tr_info("No filesystem found, formatting... ");
+        fflush(stdout);
+        err = fs.reformat(bd);
+        if (err) {
+            tr_error("error: %s (%d)\n", strerror(-err), err);
+            return;
+        }
+    }
     Comm_interface* comm_interface = new Comm_interface();
     if(comm_interface == NULL){
         tr_error("Can not initiate ble interface");

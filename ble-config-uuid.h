@@ -12,15 +12,14 @@ const uint8_t  ServiceBaseUUID[16] = {
     0xE0, 0xA9, 0xE5, 0x0E, 0x24, 0xDC, 0xCA, 0x9E,
 };
 const uint16_t ServiceShortUUID                 = 0x0001;
-const uint16_t ServiceTXCharacteristicShortUUID = 0x0002;
-const uint16_t ServiceRXCharacteristicShortUUID = 0x0003;
+const uint16_t ServiceCharacteristicShortUUID = 0x0002;
 const uint8_t  ServiceUUID[LONG_UUID_LENGTH] = {
     0x6E, 0x40, (uint8_t)(ServiceShortUUID >> 8), (uint8_t)(ServiceShortUUID & 0xFF), 0xB5, 0xA3, 0xF3, 0x93,
     0xE0, 0xA9, 0xE5, 0x0E, 0x24, 0xDC, 0xCA, 0x9E,
 };
 
 const uint8_t  ServiceCharacteristicUUID[LONG_UUID_LENGTH] = {
-    0x6E, 0x40, (uint8_t)(ServiceTXCharacteristicShortUUID >> 8), (uint8_t)(ServiceTXCharacteristicShortUUID & 0xFF), 0xB5, 0xA3, 0xF3, 0x93,
+    0x6E, 0x40, (uint8_t)(ServiceCharacteristicShortUUID >> 8), (uint8_t)(ServiceCharacteristicShortUUID & 0xFF), 0xB5, 0xA3, 0xF3, 0x93,
     0xE0, 0xA9, 0xE5, 0x0E, 0x24, 0xDC, 0xCA, 0x9E,
 };
 #endif

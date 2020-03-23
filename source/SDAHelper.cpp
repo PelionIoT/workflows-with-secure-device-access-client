@@ -46,7 +46,7 @@ extern const char MBED_CLOUD_TRUST_ANCHOR_PK_NAME[];
 char *g_endpoint_name = NULL;
 
 static uint8_t g_app_user_response_buff[] = "This is app data buffer";
-size_t size = 0;
+size_t param_size = 0;
 
 
 char* get_endpoint_name(){
@@ -109,7 +109,7 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
     bool success = false; // assume error
 
     SDA_UNUSED_PARAM(callback_param);
-
+    char response[200]={};
     sda_status = sda_command_type_get(handle, &command_type);
     //printf("Here in application callback\r\n");
     if (sda_status != SDA_STATUS_SUCCESS) {
@@ -168,7 +168,7 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
         * It gets the temperature value to set as a parameter
         */
 
-        int64_t temperature = 0;
+        //int64_t temperature = 0;
 
         // // Get the temperature to display
         // sda_status = sda_func_call_numeric_parameter_get(handle, 0, &temperature);
@@ -178,28 +178,25 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
         //     goto out;
         // }
 
-        const uint8_t** param_data = (const uint8_t**)calloc(10, sizeof(uint8_t*));
-        sda_status = sda_func_call_data_parameter_get(handle, 0, param_data, &size);
-        uint8_t arr[size];
-        for(int i=0; i< size; i++){
-            //tr_error("%d",param_data[0][i]);
-            arr[i] = param_data[0][i];
-            }
+        const uint8_t** param_data = (const uint8_t**)calloc(15, sizeof(uint8_t*));
+        sda_status = sda_func_call_data_parameter_get(handle, 0, param_data, &param_size);
+        uint8_t arr[param_size];
         if (sda_status != SDA_STATUS_SUCCESS) {
-            tr_error("Failed getting demo_callback_configure() data param[0] (%u)", sda_status);
+            tr_error("sda_func_call_data_parameter_get() (%u)", sda_status);
             sda_status_for_response = sda_status;
+            free(param_data);
             goto out;
         }
-
+        memcpy(&(arr[0]),&(param_data[0][0]), param_size);
         free(param_data);
         // Dispatch function callback
-        success = demo_callback_fetchdata(arr);
+        success = demo_callback_writedata(arr);
         if (!success) {
-            tr_error("demo_callback_configure() failed");
+            tr_error("demo_callback_writedata() failed");
             sda_status_for_response = SDA_STATUS_OPERATION_EXECUTION_ERROR;
             goto out;
         }
-
+        sprintf(response,"File Write Successfull");
     }
     else if (memcmp(func_callback_name, "read-data", func_callback_name_size) == 0) {
 
@@ -210,7 +207,23 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
         */
 
         // Dispatch function callback
-        success = demo_callback_read_data();
+        // const uint8_t** param_data = (const uint8_t**)calloc(15, sizeof(uint8_t*));
+        // sda_status = sda_func_call_data_parameter_get(handle, 0, param_data, &size);
+        // uint8_t path[size];
+        // for(int i=0; i < size; i++){
+        //     path[i] = param_data[0][i];
+        //     }
+        // if (sda_status != SDA_STATUS_SUCCESS) {
+        //     tr_error("Failed getting demo_callback_configure() data param[0] (%u)", sda_status);
+        //     sda_status_for_response = sda_status;
+        //     free(param_data);
+        //     goto out;
+        // }
+
+        // free(param_data);
+        // Dispatch function callback
+        uint8_t path[10]="test2.txt";
+        success = demo_callback_read_data(path, response);// arr = path from where to read the file
         if (!success) {
             tr_error("demo_callback_read_data() failed");
             sda_status_for_response = SDA_STATUS_OPERATION_EXECUTION_ERROR;
@@ -265,7 +278,7 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
         goto out;
     }
 
-    sda_status = sda_response_data_set(handle, g_app_user_response_buff, sizeof(g_app_user_response_buff));
+    sda_status = sda_response_data_set(handle, (uint8_t*)response, strlen(response));
     if (sda_status != SDA_STATUS_SUCCESS) {
         printf("sda_response_data_set failed (%u)", sda_status);
         sda_status_for_response = sda_status;

@@ -46,7 +46,7 @@ class SDAOperation{
         SDAOperation(uint8_t* request)://_buffer = request;
         _message_header(FTCD_MSG_HEADER_TOKEN_SDA),_index(0),_message_size(0),_buffer(request) {
         };
-        sda_protocol_error_t init(uint8_t* response,uint8_t response_max_size, uint16_t* response_size);
+        sda_protocol_error_t init(uint8_t* response,size_t response_max_size, uint16_t* response_size);
         sda_protocol_error_t is_token_detected();
         uint32_t read_message_size();
         sda_protocol_error_t read_message(uint8_t* message, uint32_t message_size);

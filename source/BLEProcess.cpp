@@ -98,11 +98,8 @@ void BLEProcess::when_init_complete(BLE::InitializationCompleteCallbackContext *
     Gap &gap = _ble_interface.gap();
     gap.onConnection(this, &BLEProcess::when_connection);
     gap.onDisconnection(this, &BLEProcess::when_disconnection);
-    _blesda = new BLESDA(_event_queue,_ble_interface, _endpoint);
-    if(!_blesda){
-        delete _blesda;
-        return;
-    }
+    blesda = new BLESDA(_event_queue,_ble_interface, _endpoint);
+
     if (!set_advertising_parameters()) {
         return;
     }
@@ -130,7 +127,7 @@ void BLEProcess::when_connection(const Gap::ConnectionCallbackParams_t *connecti
 void BLEProcess::when_disconnection(const Gap::DisconnectionCallbackParams_t *event)
 {
     printf("Disconnected.\r\n");
-    delete _blesda;
+    //delete blesda;
     start_advertising();
 }
 
@@ -180,7 +177,7 @@ bool BLEProcess::set_advertising_data()
         ble::AdvertisingDataSimpleBuilder<ble::LEGACY_ADVERTISING_MAX_SIZE>()
             .setFlags()
             .setName("Heimdall")
-            .setLocalService(_blesda->getUUID())
+            .setLocalService(blesda->getUUID())
             .getAdvertisingData()
     );
 

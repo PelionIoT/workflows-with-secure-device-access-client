@@ -16,7 +16,7 @@
 #include "include/BLE-SDAService.h"
 using mbed::callback;
 
-#define response_size 231
+#define response_size 700
 uint16_t idx = 0;
 uint8_t g_seqnum = 0;
 
@@ -42,7 +42,7 @@ size_t BLESDA::write(uint8_t* buff, uint8_t length) {
 }
 
 sda_protocol_error_t BLESDA::BLETX(_sda_over_ble_header* header, uint8_t len){
-    mbed_tracef(TRACE_LEVEL_INFO,TRACE_GROUP_BLE,"Seq Num: %d", header->seq_num);
+    //mbed_tracef(TRACE_LEVEL_INFO,TRACE_GROUP_BLE,"Seq Num: %d", header->seq_num);
     uint8_t transmit_data_len = len+START_DATA_BYTE+1;
     uint8_t* msg = (uint8_t*)malloc(transmit_data_len*sizeof(uint8_t));
     msg[0] = header->seq_num;
@@ -109,7 +109,7 @@ sda_protocol_error_t BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_
 
 
 sda_protocol_error_t BLESDA::ProcessBuffer(sda_over_ble_header* frag_sda){
-    mbed_tracef(TRACE_LEVEL_INFO, TRACE_GROUP_BLE,"Processing buffer\r\n");
+    //mbed_tracef(TRACE_LEVEL_INFO, TRACE_GROUP_BLE,"Processing buffer\r\n");
     //uint8_t response_size = 231;
     uint8_t response[response_size]={0};
     uint16_t sda_response_size=0;
@@ -129,18 +129,17 @@ sda_protocol_error_t BLESDA::ProcessBuffer(sda_over_ble_header* frag_sda){
     else{
         idx = 0;
         mbed_tracef(TRACE_LEVEL_INFO,TRACE_GROUP_BLE,"Sending buffer to SDA\r\n");
-        SDAOperation* sda_operation = new SDAOperation(msg_to_sda);
-        sda_protocol_error_t status = sda_operation->init(response,response_size,&sda_response_size);
+        SDAOperation sda_operation(msg_to_sda);
+        sda_protocol_error_t status = sda_operation.init(response,response_size,&sda_response_size);
         if(status !=PT_ERR_OK){
             free(msg_to_sda);
             msg_to_sda = NULL;
-            delete sda_operation;
             return status;
         }
-        mbed_tracef(TRACE_LEVEL_INFO,TRACE_GROUP_BLE,"sdalen :%d ",sda_response_size);
+        //mbed_tracef(TRACE_LEVEL_INFO,TRACE_GROUP_BLE,"sdalen :%d ",sda_response_size);
         free(msg_to_sda);
         msg_to_sda = NULL;
-        delete sda_operation;
+        //delete sda_operation;
 
         return sda_fragment_datagram(response, sda_response_size, SDA_DATA);
     }

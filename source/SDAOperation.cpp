@@ -60,7 +60,7 @@ sda_protocol_error_t SDAOperation::read_message_signature(uint8_t* sig, size_t r
     return PT_ERR_OK;
 }
 
-sda_protocol_error_t SDAOperation::init(uint8_t* response, uint8_t response_max_size, uint16_t* response_size){
+sda_protocol_error_t SDAOperation::init(uint8_t* response, size_t response_max_size, uint16_t* response_size){
    // printf("Response maxsize %ld\r\n",response_max_size);
     size_t response_actual_size = 0;
     // for(int i = 0 ; i < 8; i++){

@@ -91,7 +91,7 @@ private:
     events::EventQueue &_event_queue;
     BLE &_ble_interface;
     char* _endpoint;
-    BLESDA* _blesda;
+    BLESDA* blesda;
     mbed::Callback<void(BLE&, events::EventQueue&)> _post_init_cb;
 };
 
