@@ -178,24 +178,26 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
         //     goto out;
         // }
 
-        const uint8_t** param_data = (const uint8_t**)calloc(15, sizeof(uint8_t*));
+        const uint8_t** param_data = (const uint8_t**)calloc(200, sizeof(uint8_t*));
         sda_status = sda_func_call_data_parameter_get(handle, 0, param_data, &param_size);
-        uint8_t arr[param_size];
         if (sda_status != SDA_STATUS_SUCCESS) {
             tr_error("sda_func_call_data_parameter_get() (%u)", sda_status);
             sda_status_for_response = sda_status;
             free(param_data);
             goto out;
         }
-        memcpy(&(arr[0]),&(param_data[0][0]), param_size);
+        uint8_t* fetch_data=(uint8_t*)calloc(param_size+1, sizeof(uint8_t));
+        memcpy(&(fetch_data[0]),&(param_data[0][0]), param_size);
         free(param_data);
         // Dispatch function callback
-        success = demo_callback_writedata(arr);
+        success = demo_callback_writedata(fetch_data);
         if (!success) {
             tr_error("demo_callback_writedata() failed");
             sda_status_for_response = SDA_STATUS_OPERATION_EXECUTION_ERROR;
+            free(fetch_data);
             goto out;
         }
+        free(fetch_data);
         sprintf(response,"File Write Successfull");
     }
     else if (memcmp(func_callback_name, "read-data", func_callback_name_size) == 0) {
