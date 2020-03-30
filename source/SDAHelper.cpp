@@ -43,9 +43,6 @@
 extern const uint8_t MBED_CLOUD_TRUST_ANCHOR_PK[];
 extern const uint32_t MBED_CLOUD_TRUST_ANCHOR_PK_SIZE;
 extern const char MBED_CLOUD_TRUST_ANCHOR_PK_NAME[];
-char *g_endpoint_name = NULL;
-
-static uint8_t g_app_user_response_buff[] = "This is app data buffer";
 size_t param_size = 0;
 
 
@@ -109,7 +106,7 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
     bool success = false; // assume error
 
     SDA_UNUSED_PARAM(callback_param);
-    char response[200]={};
+    char response[1000]={};
     sda_status = sda_command_type_get(handle, &command_type);
     //printf("Here in application callback\r\n");
     if (sda_status != SDA_STATUS_SUCCESS) {
@@ -178,7 +175,7 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
         //     goto out;
         // }
 
-        const uint8_t** param_data = (const uint8_t**)calloc(200, sizeof(uint8_t*));
+        const uint8_t** param_data = (const uint8_t**)calloc(500, sizeof(uint8_t*));
         sda_status = sda_func_call_data_parameter_get(handle, 0, param_data, &param_size);
         if (sda_status != SDA_STATUS_SUCCESS) {
             tr_error("sda_func_call_data_parameter_get() (%u)", sda_status);
@@ -186,7 +183,7 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
             free(param_data);
             goto out;
         }
-        uint8_t* fetch_data=(uint8_t*)calloc(param_size+1, sizeof(uint8_t));
+        uint8_t* fetch_data=(uint8_t*)calloc(param_size, sizeof(uint8_t));
         memcpy(&(fetch_data[0]),&(param_data[0][0]), param_size);
         free(param_data);
         // Dispatch function callback
@@ -198,7 +195,7 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
             goto out;
         }
         free(fetch_data);
-        sprintf(response,"File Write Successfull");
+        sprintf(response,"File Write Complete");
     }
     else if (memcmp(func_callback_name, "read-data", func_callback_name_size) == 0) {
 
@@ -282,14 +279,14 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
 
     sda_status = sda_response_data_set(handle, (uint8_t*)response, strlen(response));
     if (sda_status != SDA_STATUS_SUCCESS) {
-        printf("sda_response_data_set failed (%u)", sda_status);
+        tr_error("sda_response_data_set failed (%u)", sda_status);
         sda_status_for_response = sda_status;
         goto out;
     }
 
     // flow succeeded
     //printf("(%.*s) execution succeeded", (int)func_callback_name_size, func_callback_name);
-out: 
+out:
 
     if ((sda_status_for_response != SDA_STATUS_SUCCESS) && (sda_status_for_response != SDA_STATUS_NO_MORE_SCOPES)) {
         // Notify some fault happen (only if not 'access denied')

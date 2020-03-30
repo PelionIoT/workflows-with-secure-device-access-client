@@ -16,7 +16,7 @@
 #include "include/BLE-SDAService.h"
 using mbed::callback;
 
-#define response_size 700
+#define response_size 1000
 uint16_t idx = 0;
 uint8_t g_seqnum = 0;
 
@@ -35,7 +35,7 @@ uint16_t BLESDA::getCharacteristicHandle() {
 //     return rxCharacteristic.getValueAttribute().getHandle();
 // }
 size_t BLESDA::write(uint8_t* buff, uint8_t length) {
-    if (ble.getGapState().connected) {
+    if (ble.gap().getState().connected) {
             ble.gattServer().write(getCharacteristicHandle(), static_cast<const uint8_t *>(buff), length);
     }
 	return length;
@@ -48,8 +48,9 @@ sda_protocol_error_t BLESDA::BLETX(_sda_over_ble_header* header, uint8_t len){
     msg[0] = header->seq_num;
     msg[1] = (header->type|(header->more_frag<<2)|(header->frag_num<<3));
     msg[2] = (header->frag_length);
-    msg[4] = (header->length >>8);
     msg[3] = (header->length & 0x00ff);
+    msg[4] = (header->length >>8);
+
     memcpy(&msg[START_DATA_BYTE], header->payload, len);
     write(msg, transmit_data_len);
     free(msg);
@@ -65,7 +66,7 @@ sda_protocol_error_t BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_
     static uint8_t frag_num=0;
     uint16_t totalpayloadsize=payloadsize;
     //Calculate number of fragment in order to be transmitted
-    uint8_t num_frag = ((payloadsize%BLE_MTU_SIZE)==0)?(payloadsize/BLE_MTU_SIZE):(payloadsize/BLE_MTU_SIZE)+1;
+    uint8_t num_frag = ((payloadsize%BLE_PACKET_SIZE)==0)?(payloadsize/BLE_PACKET_SIZE):(payloadsize/BLE_PACKET_SIZE)+1;
     while(num_frag)
     {
         sda_over_ble_header  frag_sda ={0};
@@ -75,7 +76,7 @@ sda_protocol_error_t BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_
         frag_sda.more_frag = (num_frag==1)?0:1;
         frag_sda.frag_num=(++frag_num);
         frag_sda.length=totalpayloadsize;
-        frag_sda.frag_length=(payloadsize < BLE_MTU_SIZE)? payloadsize : BLE_MTU_SIZE;
+        frag_sda.frag_length=(payloadsize < BLE_PACKET_SIZE)? payloadsize : BLE_PACKET_SIZE;
         frag_sda.payload = (uint8_t*) malloc(frag_sda.frag_length);
         if(frag_sda.payload!=NULL)
             {
@@ -86,7 +87,7 @@ sda_protocol_error_t BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_
                 mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP_BLE,"can not create payload for BLE");
                 return PT_ERR_SEND_BLE;
             }
-        if(payloadsize<BLE_MTU_SIZE)
+        if(payloadsize<BLE_PACKET_SIZE)
 		{
             fragmentStartOffset = 0;
         }
@@ -131,6 +132,7 @@ sda_protocol_error_t BLESDA::ProcessBuffer(sda_over_ble_header* frag_sda){
         mbed_tracef(TRACE_LEVEL_INFO,TRACE_GROUP_BLE,"Sending buffer to SDA\r\n");
         SDAOperation sda_operation(msg_to_sda);
         sda_protocol_error_t status = sda_operation.init(response,response_size,&sda_response_size);
+        //printf("SDA Response Size:%d",sda_response_size);
         if(status !=PT_ERR_OK){
             free(msg_to_sda);
             msg_to_sda = NULL;
@@ -167,7 +169,6 @@ void BLESDA::onDataWritten(const GattWriteCallbackParams *params) {
     else {
         return;
     	}
-    buffer.crc = params->data[buffer.frag_length+START_DATA_BYTE];
     if(buffer.type == SDA_REQ){
         sda_protocol_error_t status = processRequest(&buffer);
         if(status!=PT_ERR_OK){

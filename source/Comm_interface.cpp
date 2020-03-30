@@ -37,4 +37,3 @@ bool Comm_interface::start() {
     return status;
 }
 
-bool Comm_interface::finish(){}

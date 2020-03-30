@@ -104,7 +104,6 @@ sda_protocol_error_t SDAOperation::init(uint8_t* response, size_t response_max_s
         kcm_status_e kcm_status = KCM_STATUS_SUCCESS;
         kcm_status = cs_hash(CS_SHA256, msg, _message_size, self_calculated_sig, sizeof(self_calculated_sig));
         if (kcm_status != KCM_STATUS_SUCCESS) {
-            //printf("failed calculating msg sig");
             mbed_tracef(TRACE_LEVEL_CMD, TRACE_GROUP_PT, "Failed calculating message signature");
             status = PT_ERR_FAILED_TO_CALCULATE_MESSAGE_SIG;
             free(msg);

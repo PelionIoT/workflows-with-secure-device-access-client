@@ -28,10 +28,8 @@ class Comm_interface{
         };
         bool init(char* endpoint);
         bool start();
-        bool finish();
     private:
         events::EventQueue _event_queue;
         BLEProcess* _bleprocess;
-        bool _isconnected = false;
 };
 #endif

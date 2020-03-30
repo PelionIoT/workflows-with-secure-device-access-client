@@ -20,19 +20,14 @@
 #include "ble/BLE.h"
 #include "ble/pal/Deprecated.h"
 #include "SDAOperation.h"
-#include "mbed.h"
 #include "mbed_trace.h"
+#include "mbed.h"
 #include "./../../ble-config-uuid.h"
 
-#define TRACE_GROUP_BLE             "bleP"
-
-#define SERIAL_NUM_INDEX        0
-#define CONTROL_FRAME_INDEX     1
-#define PACKET_LEN              2
+#define TRACE_GROUP_BLE             "BLESDA"
 #define UPPER_BYTE_REQ_INDEX    3
 #define LOWER_BYTE_REQ_INDEX    4
 #define START_DATA_BYTE         8
-#define BLE_MTU_SIZE            231
 #define SDA_DATA                1
 #define SDA_ACK                 3
 #define SDA_REQ                 2
@@ -56,8 +51,6 @@ typedef struct _sda_over_ble_header {
 
 	/* Payload */
     uint8_t* payload;
-    /* CRC */
-    uint8_t crc;
 }__attribute__((packed)) sda_over_ble_header;
 
 class BLESDA {

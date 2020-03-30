@@ -4,7 +4,9 @@
 
 #include<stdint.h>
 
-#define LONG_UUID_LENGTH        16
+#define LONG_UUID_LENGTH            16
+#define BLE_PACKET_SIZE             230
+
 
 //enter the base UUID of UART Service. For example, Here is the Nordic Uart UUID
 const uint8_t  ServiceBaseUUID[16] = {

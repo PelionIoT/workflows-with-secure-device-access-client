@@ -105,23 +105,30 @@ void display_faulty_message(const char *fault_message)
 
 // path+content
 bool demo_callback_writedata(uint8_t* data) {
-    char* token;
-    token = strtok((char*)data,SEP);
+    char* token = strtok((char*)data,SEP);
     char *final_path = (char*)calloc((strlen(token)+4),sizeof(char));
     sprintf(final_path,"/fs/%s",(char*)token);
     tr_info("Writing file\n");
     FILE* f = fopen(final_path, "w");
     if(f!=NULL) {
         token=strtok(NULL, "^");
-        printf("%s",token);
-        fprintf(f,"%s\r\n", (const char*)token);
-        fflush(f);
-        fclose(f);
-        free(final_path);
-        token = NULL;
-        return true;
+        printf("Data is: %s",token);
+        if(fprintf(f,"%s\r\n", (const char*)token)){
+            fflush(f);
+            fclose(f);
+            free(final_path);
+            token = NULL;
+            return true;
+        }
+        else{
+            fflush(f);
+            fclose(f);
+            free(final_path);
+            token = NULL;
+            return false;
+        }
     }
-    else{
+    else {
         tr_error("Err: %s",strerror(errno));
         free(final_path);
         return false;
@@ -135,19 +142,21 @@ bool demo_callback_read_data(uint8_t* path, char* response)
         return false;
     }
     uint8_t path_len = strlen((const char*)path)+4;
-    char final_path[path_len];
+    char* final_path =(char*)calloc(path_len,sizeof(char));
     sprintf(final_path,"/fs/%s",(char*)path);
     FILE* r = fopen(final_path, "r");
     if(!r){
+        printf("Can not open file %s",strerror(errno));
         tr_error("Err: %s",strerror(errno));
         return false;
         }
     tr_info("File read starting");
-    fscanf(r, "%[^\n]", response);
+    fscanf(r, "%[^EOF]", response);
     fflush(r);
     fclose(r);
+    printf("%s",response);
     tr_info("File read complete");
-    memset(final_path, 0, strlen((const char*)path)+4);
+    free(final_path);
     return true;
 }
 

@@ -44,7 +44,7 @@ enum sda_protocol_error_t{
 class SDAOperation{
     public:
         SDAOperation(uint8_t* request)://_buffer = request;
-        _message_header(FTCD_MSG_HEADER_TOKEN_SDA),_index(0),_message_size(0),_buffer(request) {
+                    _index(0),_message_size(0),_buffer(request) {
         };
         sda_protocol_error_t init(uint8_t* response,size_t response_max_size, uint16_t* response_size);
         sda_protocol_error_t is_token_detected();
@@ -54,7 +54,7 @@ class SDAOperation{
 
     private:
         size_t _read(uint8_t* buffer, size_t message_size);
-        uint8_t _message_header[FTCD_MSG_HEADER_TOKEN_SIZE_BYTES];
+        uint8_t _message_header[FTCD_MSG_HEADER_TOKEN_SIZE_BYTES]=FTCD_MSG_HEADER_TOKEN_SDA;
         int _index;
         uint32_t _message_size;
         uint8_t* _buffer;
