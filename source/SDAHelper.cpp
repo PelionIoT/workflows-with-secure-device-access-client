@@ -209,13 +209,13 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
         const uint8_t** param_data = (const uint8_t**)calloc(15, sizeof(uint8_t*));
         sda_status = sda_func_call_data_parameter_get(handle, 0, param_data, &size);
         if (sda_status != SDA_STATUS_SUCCESS) {
-            tr_error("Failed getting demo_callback_configure() data param[0] (%u)", sda_status);
+            tr_error("Failed getting data parameter (%u)", sda_status);
             sda_status_for_response = sda_status;
             free(param_data);
             goto out;
         }
         uint8_t* path= (uint8_t*)calloc(60,sizeof(uint8_t));
-        memcpy(&(fetch_data[0]),&(param_data[0][0]), param_size);
+        memcpy(&(path[0]),&(param_data[0][0]), param_size);
         free(param_data);
         // Dispatch function callback
         success = demo_callback_read_data(path, response);// arr = path from where to read the file
