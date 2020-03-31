@@ -62,11 +62,11 @@ public:
     * @param _ble
     *               BLE object for the underlying controller.
     */
-    BLESDA(events::EventQueue &event_queue, BLE &_ble, char* endpointbuffer) :
+    BLESDA(events::EventQueue &event_queue, BLE &_ble, const char* endpointbuffer) :
         _event_queue(event_queue),
         ble(_ble),
         _endpointBuffer(endpointbuffer),
-        sdaCharacteristic(ServiceCharacteristicUUID, NULL, 1, BLE_UART_SERVICE_MAX_DATA_LEN,
+        sdaCharacteristic(CharacteristicUUID, NULL, 1, BLE_UART_SERVICE_MAX_DATA_LEN,
                          GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE_WITHOUT_RESPONSE
                          |GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY)
         {
@@ -121,7 +121,7 @@ private:
     char* getEndpoint();
     events::EventQueue &_event_queue;
     BLE                 &ble;                                           //  BLe instance
-    char*               _endpointBuffer;                                /*  The local buffer that contains the endpoint of
+    const char*         _endpointBuffer;                                /*  The local buffer that contains the endpoint of
                                                                         the device.       */
     uint8_t*            msg_to_sda = NULL;
     GattCharacteristic  sdaCharacteristic;                               /**< From the point of view of the external client, this is the characteristic

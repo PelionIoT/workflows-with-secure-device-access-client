@@ -46,7 +46,7 @@ LittleFileSystem fs("fs");
 static void demo_main(){
 	mcc_platform_sw_build_info();
 
-    tr_cmdline("Secure-Device-Access initialization");
+    tr_cmdline("Secure-Device-Access initialization\n");
 
     // Initialize storage
     bool success = mcc_platform_storage_init() == 0;
@@ -64,7 +64,7 @@ static void demo_main(){
         return;
     }
     char* endpoint = get_endpoint_name();
-    printf("Endpoint: %s", endpoint);
+    printf("Endpoint: %s\n", endpoint);
     sda_status_e sda_status = sda_init();
     if (sda_status != SDA_STATUS_SUCCESS) {
         tr_error("Failed initializing Secure-Device-Access");

@@ -28,8 +28,7 @@
 #include "ble/GapAdvertisingData.h"
 #include "ble/FunctionPointerWithContext.h"
 #include "BLE-SDAService.h"
-
-
+#include "DeviceInformationService.h"
 
 /**
  * Handle initialization adn shutdown of the BLE Instance.
@@ -50,6 +49,7 @@ public:
         _ble_interface(ble_interface),
         _endpoint(endpoint),
         _post_init_cb(){
+
     }
     ~BLEProcess()
     {

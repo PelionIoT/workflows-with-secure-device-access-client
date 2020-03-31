@@ -17,6 +17,7 @@
 
 
 #include "include/BLEProcess.h"
+#include "./../ble-config-uuid.h"
 #include <stdint.h>
 #include <stdio.h>
 #include "events/EventQueue.h"
@@ -99,6 +100,13 @@ void BLEProcess::when_init_complete(BLE::InitializationCompleteCallbackContext *
     gap.onConnection(this, &BLEProcess::when_connection);
     gap.onDisconnection(this, &BLEProcess::when_disconnection);
     blesda = new BLESDA(_event_queue,_ble_interface, _endpoint);
+    DeviceInformationService deviceInfo(_ble_interface, \
+                                        MANUFACTURER_NAME,\
+                                        MODEL_NUM, \
+                                        (const char*)_endpoint, \
+                                        HARDWARE_REVISION, \
+                                        FIRMWARE_REVISION,\
+                                        SOFTWARE_REVISION);
 
     if (!set_advertising_parameters()) {
         return;
@@ -166,9 +174,6 @@ bool BLEProcess::set_advertising_parameters()
 bool BLEProcess::set_advertising_data()
 {
     Gap &gap = _ble_interface.gap();
-
-   // gap.accumulateAdvertisingPayload(GapAdvertisingData::COMPLETE_LIST_16BIT_SERVICE_IDS, EDDYSTONE_UUID, sizeof(EDDYSTONE_UUID));
-
     /* Use the simple builder to construct the payload; it fails at runtime
         * if there is not enough space left in the buffer */
     ble_error_t error = gap.setAdvertisingPayload(
