@@ -28,6 +28,9 @@ size_t BLESDA::write(uint8_t* buff, uint8_t length) {
     if (ble.gap().getState().connected) {
             ble.gattServer().write(getCharacteristicHandle(), static_cast<const uint8_t *>(buff), length);
     }
+    else{
+        mbed_tracef(TRACE_ACTIVE_LEVEL_ERROR, TRACE_GROUP_BLE, "ble not connected");
+    }
 	return length;
 }
 
@@ -140,5 +143,9 @@ void BLESDA::onDataWritten(const GattWriteCallbackParams *params) {
         mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP_BLE, "Got err: (%d)",status);
         return;
     	}
+    }
+    else{
+        mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP_BLE, "can not get characteristic handle");
+        return;
     }
 }

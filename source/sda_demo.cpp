@@ -112,7 +112,7 @@ bool demo_callback_writedata(uint8_t* data) {
     FILE* f = fopen(final_path, "w");
     if(f!=NULL) {
         token=strtok(NULL, "^");
-        tr_info("Data is: %s",token);
+        printf("Data is: %s",token);
         if(fprintf(f,"%s\r\n", (const char*)token)){
             fflush(f);
             fclose(f);
@@ -154,7 +154,7 @@ bool demo_callback_read_data(uint8_t* path, char* response)
     fscanf(r, "%[^EOF]", response);
     fflush(r);
     fclose(r);
-    tr_info("%s",response);
+    printf("%s",response);
     tr_info("File read complete");
     free(final_path);
     return true;

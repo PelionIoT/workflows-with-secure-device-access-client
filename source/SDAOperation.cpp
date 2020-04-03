@@ -105,7 +105,7 @@ sda_protocol_error_t SDAOperation::init(uint8_t* response, size_t response_max_s
         kcm_status = cs_hash(CS_SHA256, msg, _message_size, self_calculated_sig, sizeof(self_calculated_sig));
         if (kcm_status != KCM_STATUS_SUCCESS) {
             mbed_tracef(TRACE_LEVEL_CMD, TRACE_GROUP_PT, "Failed calculating message signature");
-            status = PT_ERR_FAILED_TO_CALCULATE_MESSAGE_SIG;
+            status = PT_ERR_FAILED_TO_CALCULATE_MESSAGE_SIGNATURE;
             free(msg);
             return status;
         }
@@ -113,7 +113,7 @@ sda_protocol_error_t SDAOperation::init(uint8_t* response, size_t response_max_s
     //compare signatures
         if (memcmp(self_calculated_sig, sig_from_message, KCM_SHA256_SIZE) != 0) {
             mbed_tracef(TRACE_LEVEL_CMD, TRACE_GROUP_PT, "Inconsistent message signature");
-            status = PT_ERR_INCONSISTENT_MESSAGE_SIG;
+            status = PT_ERR_INCONSISTENT_MESSAGE_SIGNATURE;
             free(msg);
             return status;
         }
