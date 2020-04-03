@@ -29,23 +29,23 @@
 #define TRACE_GROUP           "sdae"
 
 // Color value is simple bitfield of 3 led bits (blue, green, red)
-#define LED_CL_BLACK  7 // OFF
-#define LED_CL_RED    6
-#define LED_CL_GREEN  5
-#define LED_CL_YELLOW 4
-#define LED_CL_BLUE   3
-#define LED_CL_PINK   2
-#define LED_CL_CYAN   1
-#define LED_CL_WHITE  0
+#define LED_CL_BLACK    7 // OFF
+#define LED_CL_RED      6
+#define LED_CL_GREEN    5
+#define LED_CL_YELLOW   4
+#define LED_CL_BLUE     3
+#define LED_CL_PINK     2
+#define LED_CL_CYAN     1
+#define LED_CL_WHITE    0
 
-#define LED_OFF 1
-#define LED_ON  0
+#define LED_OFF         1
+#define LED_ON          0
 
-#define LED_RED LED1
-#define LED_GREEN LED2
-#define LED_BLUE LED3
+#define LED_RED         LED1
+#define LED_GREEN       LED2
+#define LED_BLUE        LED3
 
-#define SEP         "^"
+#define SEPERATOR       "^"
 
 /////////////////////// STRUCTURES ////////////////////////
 
@@ -105,14 +105,14 @@ void display_faulty_message(const char *fault_message)
 
 // path+content
 bool demo_callback_writedata(uint8_t* data) {
-    char* token = strtok((char*)data,SEP);
+    char* token = strtok((char*)data,SEPERATOR);
     char *final_path = (char*)calloc((strlen(token)+4),sizeof(char));
     sprintf(final_path,"/fs/%s",(char*)token);
     tr_info("Writing file\n");
     FILE* f = fopen(final_path, "w");
     if(f!=NULL) {
         token=strtok(NULL, "^");
-        printf("Data is: %s",token);
+        tr_info("Data is: %s",token);
         if(fprintf(f,"%s\r\n", (const char*)token)){
             fflush(f);
             fclose(f);
@@ -134,7 +134,7 @@ bool demo_callback_writedata(uint8_t* data) {
         return false;
     }
 }
-// response pointer should be allocated bedore calling this function
+// response pointer should be allocated before calling this function
 bool demo_callback_read_data(uint8_t* path, char* response)
 {
     if((path == NULL) || (*path == ' ')){
@@ -154,7 +154,7 @@ bool demo_callback_read_data(uint8_t* path, char* response)
     fscanf(r, "%[^EOF]", response);
     fflush(r);
     fclose(r);
-    printf("%s",response);
+    tr_info("%s",response);
     tr_info("File read complete");
     free(final_path);
     return true;

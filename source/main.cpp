@@ -82,7 +82,7 @@ static void demo_main(){
     }
     Comm_interface* comm_interface = new Comm_interface();
     if(comm_interface == NULL){
-        tr_error("Can not initiate ble interface");
+        tr_error("Can not initiate comm interface");
         return;
     }
 	comm_interface->init(endpoint);

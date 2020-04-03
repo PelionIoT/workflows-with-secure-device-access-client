@@ -106,7 +106,7 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
     bool success = false; // assume error
 
     SDA_UNUSED_PARAM(callback_param);
-    char response[1000]={};
+    char response[ResponseBufferLength]={};
     sda_status = sda_command_type_get(handle, &command_type);
     //printf("Here in application callback\r\n");
     if (sda_status != SDA_STATUS_SUCCESS) {
@@ -175,7 +175,7 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
         //     goto out;
         // }
 
-        const uint8_t** param_data = (const uint8_t**)calloc(500, sizeof(uint8_t*));
+        const uint8_t** param_data = (const uint8_t**)calloc(500, sizeof(uint8_t*));// 500* 4 is 2000 Bytes which is the response buffer length.
         sda_status = sda_func_call_data_parameter_get(handle, 0, param_data, &param_size);
         if (sda_status != SDA_STATUS_SUCCESS) {
             tr_error("sda_func_call_data_parameter_get() (%u)", sda_status);
@@ -199,25 +199,18 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
     }
     else if (memcmp(func_callback_name, "read-data", func_callback_name_size) == 0) {
 
-        /***
-        * This function accesses the TEMPERATURE peripheral and query current outside temperature,
-        * and displays it on LCD if the provided scope is in form of demo_callback_read_temperature.
-        * This function has no inbound parameters.
-        */
-
-        // Dispatch function callback
-        const uint8_t** param_data = (const uint8_t**)calloc(15, sizeof(uint8_t*));
-        sda_status = sda_func_call_data_parameter_get(handle, 0, param_data, &size);
+        const uint8_t** param_data = (const uint8_t**)calloc(15, sizeof(uint8_t*));//15*4 is 60 Bytes which is the length for path name.
+        sda_status = sda_func_call_data_parameter_get(handle, 0, param_data, &param_size);
         if (sda_status != SDA_STATUS_SUCCESS) {
-            tr_error("Failed getting data parameter (%u)", sda_status);
+            tr_error("Please give the file path (%u)", sda_status);
             sda_status_for_response = sda_status;
             free(param_data);
             goto out;
         }
-        uint8_t* path= (uint8_t*)calloc(60,sizeof(uint8_t));
+        uint8_t* path= (uint8_t*)calloc(PathLength,sizeof(uint8_t));
         memcpy(&(path[0]),&(param_data[0][0]), param_size);
         free(param_data);
-        // Dispatch function callback
+        param_size = 0;
         success = demo_callback_read_data(path, response);// arr = path from where to read the file
         free(path);
         if (!success) {

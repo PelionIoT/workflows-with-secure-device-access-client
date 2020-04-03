@@ -37,6 +37,8 @@
 #include "mbed_stats_helper.h"
 #include "sda_demo.h"
 
+#define ResponseBufferLength	2000
+#define PathLength				60
 
 
 bool factory_setup(void);
