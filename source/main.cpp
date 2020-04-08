@@ -87,7 +87,7 @@ static void demo_main(){
     }
 	comm_interface->init(endpoint);
 	if(comm_interface->start() == false){
-        tr_error("Can not start ble Advertisement");
+        tr_error("Can not start Comm interface");
     }
 }
 

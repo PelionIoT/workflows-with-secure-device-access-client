@@ -23,11 +23,11 @@
 bool Comm_interface::init(char* endpoint){
     BLE &ble_interface = BLE::Instance();
     _bleprocess = new BLEProcess(_event_queue, ble_interface, endpoint);
-    _bleprocess->on_init(NULL);
-    if(_bleprocess){
-	    return true;
+    if(!_bleprocess){
+        return false;
     }
-    return false;
+    _bleprocess->on_init(NULL);
+    return true;
 }
 bool Comm_interface::start() {
     bool status = _bleprocess->start();

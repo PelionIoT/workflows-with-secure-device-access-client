@@ -139,6 +139,7 @@ void BLESDA::onDataWritten(const GattWriteCallbackParams *params) {
         return;
     }
     sda_protocol_error_t status = ProcessBuffer(&buffer);
+    free(buffer.payload);
     if(status != PT_ERR_OK){
         mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP_BLE, "Got err: (%d)",status);
         return;
