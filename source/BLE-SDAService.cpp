@@ -29,12 +29,15 @@ size_t BLESDA::write(uint8_t* buff, uint8_t length) {
             ble.gattServer().write(getCharacteristicHandle(), static_cast<const uint8_t *>(buff), length);
     }
     else{
-        mbed_tracef(TRACE_ACTIVE_LEVEL_ERROR, TRACE_GROUP_BLE, "ble not connected");
+        ble.gap().startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
+        mbed_tracef(TRACE_ACTIVE_LEVEL_ERROR, TRACE_GROUP_BLE, "ble not connected, advertising started");
+        return 0;
     }
 	return length;
 }
 
 sda_protocol_error_t BLESDA::BLETX(_sda_over_ble_header* header, uint8_t len){
+    if(ble.gap().getState().connected) {
     uint8_t transmit_data_len = len+START_DATA_BYTE+1;
     uint8_t* msg = (uint8_t*)malloc(transmit_data_len*sizeof(uint8_t));
     memcpy(msg, header, START_DATA_BYTE);
@@ -42,87 +45,111 @@ sda_protocol_error_t BLESDA::BLETX(_sda_over_ble_header* header, uint8_t len){
     write(msg, transmit_data_len);
     free(msg);
     return PT_ERR_OK;
+    }
+    else {
+        printf("Here");
+        ble.gap().startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
+        return PT_ERR_LOST_CONN;
+    }
 }
 
 
 //function that process buffer according to BLEP protocol
 sda_protocol_error_t BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize, uint8_t type)
 {
-    uint8_t fragmentStartOffset=0;
-    static uint8_t frag_num=0;
-    uint16_t totalpayloadsize=payloadsize;
-    //Calculate number of fragment in order to be transmitted
-    uint8_t num_frag = ((payloadsize%BLE_PACKET_SIZE)==0)?(payloadsize/BLE_PACKET_SIZE):(payloadsize/BLE_PACKET_SIZE)+1;
-    while(num_frag)
-    {
-        sda_over_ble_header  frag_sda ={0};
-        frag_sda.seq_num = g_seqnum;
-        frag_sda.type = type;
-        frag_sda.more_frag = (num_frag==1)?0:1;
-        frag_sda.frag_num=(++frag_num);
-        frag_sda.length=totalpayloadsize;
-        frag_sda.frag_length=(payloadsize < BLE_PACKET_SIZE)? payloadsize : BLE_PACKET_SIZE;
-        frag_sda.payload = (uint8_t*) malloc(frag_sda.frag_length);
-        if(frag_sda.payload!=NULL)
+    if(ble.gap().getState().connected) {
+        uint8_t fragmentStartOffset=0;
+        static uint8_t frag_num=0;
+        uint16_t totalpayloadsize=payloadsize;
+        //Calculate number of fragment in order to be transmitted
+        uint8_t num_frag = ((payloadsize%BLE_PACKET_SIZE)==0)?(payloadsize/BLE_PACKET_SIZE):(payloadsize/BLE_PACKET_SIZE)+1;
+        while(num_frag)
+        {
+            sda_over_ble_header  frag_sda ={0};
+            frag_sda.seq_num = g_seqnum;
+            frag_sda.type = type;
+            frag_sda.more_frag = (num_frag==1)?0:1;
+            frag_sda.frag_num=(++frag_num);
+            frag_sda.length=totalpayloadsize;
+            frag_sda.frag_length=(payloadsize < BLE_PACKET_SIZE)? payloadsize : BLE_PACKET_SIZE;
+            frag_sda.payload = (uint8_t*) malloc(frag_sda.frag_length);
+            if(frag_sda.payload!=NULL)
+                {
+                    memcpy(&frag_sda.payload[0],&sda_payload[fragmentStartOffset],frag_sda.frag_length);
+                }
+                else
+                {
+                    mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP_BLE,"can not create payload for BLE");
+                    return PT_ERR_SEND_BLE;
+                }
+            if(payloadsize<BLE_PACKET_SIZE)
             {
-                memcpy(&frag_sda.payload[0],&sda_payload[fragmentStartOffset],frag_sda.frag_length);
+                fragmentStartOffset = 0;
             }
             else
-			{
-                mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP_BLE,"can not create payload for BLE");
-                return PT_ERR_SEND_BLE;
+            {
+                fragmentStartOffset+=frag_sda.frag_length;
             }
-        if(payloadsize<BLE_PACKET_SIZE)
-		{
-            fragmentStartOffset = 0;
+            //Transmit it to BLE
+            sda_protocol_error_t status = BLETX(&frag_sda,frag_sda.frag_length);
+            if(status != PT_ERR_OK){
+                return status;
+            }
+            num_frag--;
+            payloadsize -= frag_sda.frag_length;
+        //free allocated memory
+            free(frag_sda.payload);
         }
-        else
-		{
-            fragmentStartOffset+=frag_sda.frag_length;
-        }
-        //Transmit it to BLE
-        sda_protocol_error_t status = BLETX(&frag_sda,frag_sda.frag_length);
-        if(status != PT_ERR_OK){
-            return status;
-        }
-        num_frag--;
-        payloadsize -= frag_sda.frag_length;
-    //free allocated memory
-        free(frag_sda.payload);
+        g_seqnum = g_seqnum+1;
+        return PT_ERR_OK;
     }
-    g_seqnum = g_seqnum+1;
-    return PT_ERR_OK;
+    else{
+        printf("Here sda frag");
+        ble.gap().startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
+        mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP_BLE, "connection lost");
+        return PT_ERR_LOST_CONN;
+    }
  }
 
 
 sda_protocol_error_t BLESDA::ProcessBuffer(sda_over_ble_header* frag_sda){
-    uint8_t response[response_size]={0};
-    uint16_t sda_response_size=0;
-   if(msg_to_sda==NULL){
-        msg_to_sda = (uint8_t*)malloc(frag_sda->length*sizeof(uint8_t));
-    }
-    if(msg_to_sda == NULL){
-        mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP_BLE,"Could not allocate memory for message to sda");
-        return PT_ERR_MSG;
-    }
-    memcpy(&msg_to_sda[idx],frag_sda->payload, frag_sda->frag_length);
-    if(frag_sda->more_frag == 1){
-       idx +=frag_sda->frag_length;
-       return PT_ERR_OK;
-    }
-    else{
-        idx = 0;
-        mbed_tracef(TRACE_LEVEL_INFO,TRACE_GROUP_BLE,"Sending buffer to SDA\r\n");
-        SDAOperation sda_operation(msg_to_sda);
-        sda_protocol_error_t status = sda_operation.init(response,response_size,&sda_response_size);
-        if(status !=PT_ERR_OK){
+    if(ble.gap().getState().connected) {
+        uint8_t response[response_size]={0};
+        uint16_t sda_response_size=0;
+        if(msg_to_sda==NULL){
+            msg_to_sda = (uint8_t*)malloc(frag_sda->length*sizeof(uint8_t));
+        }
+        if(msg_to_sda == NULL){
+            mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP_BLE,"Could not allocate memory for message to sda");
+            return PT_ERR_MSG;
+        }
+        memcpy(&msg_to_sda[idx],frag_sda->payload, frag_sda->frag_length);
+        if(frag_sda->more_frag == 1){
+        idx +=frag_sda->frag_length;
+        return PT_ERR_OK;
+        }
+        else{
+            idx = 0;
+            mbed_tracef(TRACE_LEVEL_INFO,TRACE_GROUP_BLE,"Sending buffer to SDA\r\n");
+            SDAOperation sda_operation(msg_to_sda);
+            sda_protocol_error_t status = sda_operation.init(response,response_size,&sda_response_size);
+            if(status !=PT_ERR_OK){
+                free(msg_to_sda);
+                msg_to_sda = NULL;
+                return status;
+            }
             free(msg_to_sda);
             msg_to_sda = NULL;
-            return status;
+            return sda_fragment_datagram(response, sda_response_size, SDA_DATA);
         }
-        free(msg_to_sda);
-        msg_to_sda = NULL;
-        return sda_fragment_datagram(response, sda_response_size, SDA_DATA);
+    }
+    else{
+        printf("Process BUff");
+        ble.gap().startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
+        if(msg_to_sda){
+            free(msg_to_sda);
+        }
+        return PT_ERR_LOST_CONN;
     }
 }
 

@@ -96,8 +96,7 @@ sda_protocol_error_t SDAOperation::init(uint8_t* response, size_t response_max_s
             free(msg);
             return  PT_ERR_PROCESS_REQ;
         }
-        // for(int i = 0; i< response_actual_size; i++)
-        //     mbed_tracef(TRACE_LEVEL_ERROR, "PT", " %d ", response[i]);
+
         *response_size = response_actual_size;
 
         uint8_t self_calculated_sig[KCM_SHA256_SIZE];
@@ -110,7 +109,7 @@ sda_protocol_error_t SDAOperation::init(uint8_t* response, size_t response_max_s
             return status;
         }
 
-    //compare signatures
+   // compare signatures
         if (memcmp(self_calculated_sig, sig_from_message, KCM_SHA256_SIZE) != 0) {
             mbed_tracef(TRACE_LEVEL_CMD, TRACE_GROUP_PT, "Inconsistent message signature");
             status = PT_ERR_INCONSISTENT_MESSAGE_SIGNATURE;

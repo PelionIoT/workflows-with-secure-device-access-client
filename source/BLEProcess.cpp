@@ -47,7 +47,6 @@ bool BLEProcess::start()
         printf("Error: the ble instance has already been initialized.\r\n");
         return false;
     }
-
     _ble_interface.onEventsToProcess(
         makeFunctionPointer(this, &BLEProcess::schedule_ble_events)
     );
