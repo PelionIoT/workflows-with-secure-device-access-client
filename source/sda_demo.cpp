@@ -106,7 +106,11 @@ void display_faulty_message(const char *fault_message)
 // path+content
 bool demo_callback_writedata(uint8_t* data) {
     char* token = strtok((char*)data,SEPERATOR);
-    char *final_path = (char*)calloc((strlen(token)+4),sizeof(char));
+    char* final_path = (char*)calloc((strlen(token)+4),sizeof(char));
+    if(!final_path){
+        tr_error("Can not allocate memory for final_path");
+        return false;
+    }
     sprintf(final_path,"/fs/%s",(char*)token);
     tr_info("Writing file\n");
     FILE* f = fopen(final_path, "w");
@@ -154,7 +158,7 @@ bool demo_callback_read_data(uint8_t* path, char* response)
     fscanf(r, "%[^EOF]", response);
     fflush(r);
     fclose(r);
-    printf("%s",response);
+    printf("%s\n",response);
     tr_info("File read complete");
     free(final_path);
     return true;

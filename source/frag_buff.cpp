@@ -53,7 +53,7 @@ bool populate_fragment_data(Frag_buff* buff, const uint8_t* data){
 
 Frag_buff get_buff(uint8_t seq_num, uint8_t type, uint8_t more_frag, uint8_t frag_num, uint8_t frag_length, uint16_t length)
 {
-    Frag_buff buff;
+    Frag_buff buff={0};
     buff.seq_num = seq_num;
     buff.type = type;
     buff.more_frag = more_frag;

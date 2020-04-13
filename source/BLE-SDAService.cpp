@@ -19,7 +19,6 @@ using mbed::callback;
 #define response_size 1000
 uint16_t idx = 0;
 uint8_t g_seqnum = 0;
-uint16_t packet = 0;
 uint16_t BLESDA::getCharacteristicHandle() {
     return sdaCharacteristic.getValueAttribute().getHandle();
 }
@@ -37,6 +36,7 @@ size_t BLESDA::write(uint8_t* buff, uint8_t length) {
 }
 
 sda_protocol_error_t BLESDA::BLETX(Frag_buff* header, uint8_t len){
+    uint8_t* msg = NULL;
     if(ble.gap().getState().connected) {
         uint8_t transmit_data_len = len+START_DATA_BYTE+1;
         uint8_t* msg = (uint8_t*)malloc(transmit_data_len*sizeof(uint8_t));
@@ -47,6 +47,10 @@ sda_protocol_error_t BLESDA::BLETX(Frag_buff* header, uint8_t len){
         return PT_ERR_OK;
     }
     else {
+        // clearing up the message just created if the connection drops.
+        if(msg){
+            free(msg);
+        }
         ble.gap().startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
         return PT_ERR_LOST_CONN;
     }
@@ -56,6 +60,7 @@ sda_protocol_error_t BLESDA::BLETX(Frag_buff* header, uint8_t len){
 //function that process buffer according to BLEP protocol
 sda_protocol_error_t BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize, uint8_t type)
 {
+    Frag_buff frag_sda = {0};
     if(ble.gap().getState().connected) {
         uint8_t fragmentStartOffset=0;
         static uint8_t frag_num=0;
@@ -67,7 +72,7 @@ sda_protocol_error_t BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_
             uint8_t more_frag = (num_frag==1)?0:1;
             uint16_t frag_length=(payloadsize < BLE_PACKET_SIZE)? payloadsize : BLE_PACKET_SIZE;
 
-            Frag_buff frag_sda = get_buff(g_seqnum, type, more_frag, ++frag_num, totalpayloadsize,frag_length);
+            frag_sda = get_buff(g_seqnum, type, more_frag, ++frag_num,frag_length,totalpayloadsize);
             bool success = populate_fragment_data(&frag_sda,&sda_payload[fragmentStartOffset]);
             if(!success)
                 {
@@ -84,19 +89,22 @@ sda_protocol_error_t BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_
             }
             //Transmit it to BLE
             sda_protocol_error_t status = BLETX(&frag_sda,frag_sda.frag_length);
+            free(frag_sda.payload);
             if(status != PT_ERR_OK){
-                free(frag_sda.payload);
                 return status;
             }
             num_frag--;
             payloadsize -= frag_sda.frag_length;
             //free allocated memory
-            free(frag_sda.payload);
         }
         g_seqnum = g_seqnum+1;
         return PT_ERR_OK;
     }
     else{
+        //clearing up the buffer just created if the connection drops.
+        if(frag_sda.payload){
+            free(frag_sda.payload);
+        }
         ble.gap().startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
         mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP_BLE, "connection lost..now advertising!");
         return PT_ERR_LOST_CONN;
@@ -134,17 +142,17 @@ sda_protocol_error_t BLESDA::ProcessBuffer(Frag_buff* frag_sda){
         }
     }
     else{
-        ble.gap().startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
+        //if ble disconnects then we need to advertise and clear the array.
         if(msg_to_sda){
             free(msg_to_sda);
         }
+        ble.gap().startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);// start advertising.
         return PT_ERR_LOST_CONN;
     }
 }
 
 void BLESDA::onDataWritten(const GattWriteCallbackParams *params) {
-    packet+=params->len;
-    mbed_tracef(TRACE_LEVEL_INFO,TRACE_GROUP_BLE,"Data Received %d",packet);
+    mbed_tracef(TRACE_LEVEL_INFO,TRACE_GROUP_BLE,"Data Received");
     if (params->handle == getCharacteristicHandle()) {
     Frag_buff buffer = {0};
     bool success = populate_header(&buffer, params->data);
@@ -152,6 +160,7 @@ void BLESDA::onDataWritten(const GattWriteCallbackParams *params) {
         return;
     }
     success = populate_data(&buffer, params->data);
+
     if(!success){
         return;
     }
