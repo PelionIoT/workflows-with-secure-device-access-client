@@ -44,13 +44,11 @@ sda_protocol_error_t BLESDA::BLETX(Frag_buff* header, uint8_t len){
         memcpy(&msg[START_DATA_BYTE], header->payload, len);
         write(msg, transmit_data_len);
         free(msg);
+        msg = NULL;
         return PT_ERR_OK;
     }
     else {
         // clearing up the message just created if the connection drops.
-        if(msg){
-            free(msg);
-        }
         ble.gap().startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
         return PT_ERR_LOST_CONN;
     }

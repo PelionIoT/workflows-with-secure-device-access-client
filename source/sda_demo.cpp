@@ -106,11 +106,8 @@ void display_faulty_message(const char *fault_message)
 // path+content
 bool demo_callback_writedata(uint8_t* data) {
     char* token = strtok((char*)data,SEPERATOR);
-    char* final_path = (char*)calloc((strlen(token)+4),sizeof(char));
-    if(!final_path){
-        tr_error("Can not allocate memory for final_path");
-        return false;
-    }
+    uint8_t path_len = strlen(token)+4;
+    char final_path[path_len]={0};
     sprintf(final_path,"/fs/%s",(char*)token);
     tr_info("Writing file\n");
     FILE* f = fopen(final_path, "w");
@@ -120,14 +117,11 @@ bool demo_callback_writedata(uint8_t* data) {
         if(fprintf(f,"%s\r\n", (const char*)token)){
             fflush(f);
             fclose(f);
-            free(final_path);
-            token = NULL;
             return true;
         }
         else{
             fflush(f);
             fclose(f);
-            free(final_path);
             token = NULL;
             return false;
         }
@@ -139,15 +133,12 @@ bool demo_callback_writedata(uint8_t* data) {
     }
 }
 // response pointer should be allocated before calling this function
-bool demo_callback_read_data(uint8_t* path, char* response)
+bool demo_callback_read_data(uint8_t* path, uint8_t path_size,char* response)
 {
-    if((path == NULL) || (*path == ' ')){
-        tr_error("Please provide the path of the file");
-        return false;
-    }
-    uint8_t path_len = strlen((const char*)path)+4;
-    char* final_path =(char*)calloc(path_len,sizeof(char));
-    sprintf(final_path,"/fs/%s",(char*)path);
+    uint8_t path_len = path_size+4+1;
+    char final_path[path_len]={0};
+    snprintf(final_path, path_len, "/fs/%s",(char*)path);
+    printf("final Path:%s\n",final_path);
     FILE* r = fopen(final_path, "r");
     if(!r){
         printf("Can not open file %s",strerror(errno));
@@ -156,11 +147,10 @@ bool demo_callback_read_data(uint8_t* path, char* response)
         }
     tr_info("File read starting");
     fscanf(r, "%[^EOF]", response);
-    fflush(r);
     fclose(r);
     printf("%s\n",response);
     tr_info("File read complete");
-    free(final_path);
+    //free(final_path);
     return true;
 }
 

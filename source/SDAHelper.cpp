@@ -186,18 +186,20 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
             tr_error("sda_func_call_data_parameter_get() (%u)", sda_status);
             sda_status_for_response = sda_status;
             free(param_data);
+            param_data = NULL;
             goto out;
         }
-        uint8_t* fetch_data=(uint8_t*)calloc(param_size, sizeof(uint8_t));
+        char* fetch_data = (char*)malloc(param_size*sizeof(uint8_t));
         if(!fetch_data){
+            free(param_data);
             tr_error("Can not allocate memory for fetch data, not enough space");
             sda_status_for_response = SDA_STATUS_ERROR;
             goto out;
         }
+        memset(fetch_data,0,param_size);
         memcpy(&(fetch_data[0]),&(param_data[0][0]), param_size);
+        success = demo_callback_writedata((uint8_t*)fetch_data);
         free(param_data);
-        // Dispatch function callback
-        success = demo_callback_writedata(fetch_data);
         free(fetch_data);
         if (!success) {
             tr_error("demo_callback_writedata() failed");
@@ -221,24 +223,38 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
             free(param_data);
             goto out;
         }
-        uint8_t* path= (uint8_t*)calloc(PathLength,sizeof(uint8_t));
+        // uint8_t* path = (uint8_t*)malloc(param_size*sizeof(uint8_t));
+        // if(!path){
+        //     free(param_data);
+        //     tr_error("Can not allocate memory for path, not enough space");
+        //     sda_status_for_response = SDA_STATUS_ERROR;
+        //     goto out;
+        // }
+        // memcpy(&(path[0]),&(param_data[0][0]), param_size);
+        // printf("Path:%s\n",path);
+        // param_size = 0;
+        // success = demo_callback_read_data(path, response);// arr = path from where to read the file
+        // free(param_data);
+        // free(path);
+        char* path = (char*)malloc(param_size*sizeof(char));
         if(!path){
+            free(param_data);
             tr_error("Can not allocate memory for path, not enough space");
             sda_status_for_response = SDA_STATUS_ERROR;
             goto out;
         }
-        memcpy(&(path[0]),&(param_data[0][0]), param_size);
+        printf("param size:%d\n", param_size);
+        memset(path, 0, param_size);
+        memcpy(&(path[0]), &(param_data[0][0]), param_size);
         printf("Path:%s\n",path);
+        success = demo_callback_read_data((uint8_t*)path, param_size, response);// arr = path from where to read the file
         free(param_data);
-        param_size = 0;
-        success = demo_callback_read_data(path, response);// arr = path from where to read the file
         free(path);
         if (!success) {
             tr_error("demo_callback_read_data() failed");
             sda_status_for_response = SDA_STATUS_OPERATION_EXECUTION_ERROR;
             goto out;
         }
-
     }
     else if (memcmp(func_callback_name, "update", func_callback_name_size) == 0) {
 
