@@ -104,17 +104,19 @@ void display_faulty_message(const char *fault_message)
 }
 
 // path+content
-bool demo_callback_writedata(uint8_t* data) {
+bool demo_callback_writedata(uint8_t* data, uint16_t data_len) {
     char* token = strtok((char*)data,SEPERATOR);
     uint8_t path_len = strlen(token)+4;
     char final_path[path_len]={0};
+    char final_data[data_len]={0};
     sprintf(final_path,"/fs/%s",(char*)token);
     tr_info("Writing file\n");
     FILE* f = fopen(final_path, "w");
     if(f!=NULL) {
         token=strtok(NULL, "^");
-        printf("Data is: %s",token);
-        if(fprintf(f,"%s\r\n", (const char*)token)){
+        snprintf(final_data, data_len, "%s", token);
+        printf("Data is: %s",final_data);
+        if(fprintf(f,"%s\r\n", (const char*)final_data)){
             fflush(f);
             fclose(f);
             return true;
@@ -146,7 +148,7 @@ bool demo_callback_read_data(uint8_t* path, uint8_t path_size,char* response)
         return false;
         }
     tr_info("File read starting");
-    fscanf(r, "%[^EOF]", response);
+    fscanf(r, "%[^\n]", response);
     fclose(r);
     printf("%s\n",response);
     tr_info("File read complete");

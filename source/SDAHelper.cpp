@@ -189,6 +189,7 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
             param_data = NULL;
             goto out;
         }
+        printf("Content len:%d\n",param_size);
         char* fetch_data = (char*)malloc(param_size*sizeof(uint8_t));
         if(!fetch_data){
             free(param_data);
@@ -198,7 +199,7 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
         }
         memset(fetch_data,0,param_size);
         memcpy(&(fetch_data[0]),&(param_data[0][0]), param_size);
-        success = demo_callback_writedata((uint8_t*)fetch_data);
+        success = demo_callback_writedata((uint8_t*)fetch_data, param_size);
         free(param_data);
         free(fetch_data);
         if (!success) {

@@ -42,7 +42,12 @@ sda_protocol_error_t BLESDA::BLETX(Frag_buff* header, uint8_t len){
         uint8_t* msg = (uint8_t*)malloc(transmit_data_len*sizeof(uint8_t));
         memcpy(msg, header, START_DATA_BYTE);
         memcpy(&msg[START_DATA_BYTE], header->payload, len);
+        // printf("\n---------------------------------------\n");
+        // for(int i = 0 ; i < len; i++)
+        //     printf("%d ", msg[i]);
+        // printf("\n---------------------------------------\n");
         write(msg, transmit_data_len);
+        //wait_ms(5000);
         free(msg);
         msg = NULL;
         return PT_ERR_OK;
@@ -131,6 +136,7 @@ sda_protocol_error_t BLESDA::ProcessBuffer(Frag_buff* frag_sda){
             mbed_tracef(TRACE_LEVEL_INFO,TRACE_GROUP_BLE,"Sending buffer to SDA\r\n");
             SDAOperation sda_operation(msg_to_sda);
             sda_protocol_error_t status = sda_operation.init(response,response_size,&sda_response_size);
+            printf("SDA Response size:%d", sda_response_size);
             free(msg_to_sda);
             msg_to_sda = NULL;
             if(status !=PT_ERR_OK){
