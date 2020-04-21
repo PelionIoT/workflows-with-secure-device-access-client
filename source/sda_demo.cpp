@@ -114,7 +114,7 @@ bool demo_callback_writedata(uint8_t* data, uint16_t data_len) {
     FILE* f = fopen(final_path, "w");
     if(f!=NULL) {
         token=strtok(NULL, "^");
-        snprintf(final_data, data_len, "%s", token);
+        snprintf(final_data, (data_len-4), "%s", token);            //removing the path length from the data length.
         printf("Data is: %s",final_data);
         if(fprintf(f,"%s\r\n", (const char*)final_data)){
             fflush(f);

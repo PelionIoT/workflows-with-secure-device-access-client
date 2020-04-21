@@ -61,8 +61,6 @@ public:
 
     sda_protocol_error_t BLETX(Frag_buff* header, uint8_t len);
     size_t write(uint8_t *_buffer, uint8_t length);
-    int _putc(int c);
-    int _getc();
     uint8_t* getRecievedBuffer();
     void onDataWritten(const GattWriteCallbackParams *params);
     sda_protocol_error_t ProcessBuffer(Frag_buff* frag_sda);
