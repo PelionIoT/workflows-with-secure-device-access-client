@@ -5,8 +5,10 @@
 #include<stdint.h>
 
 #define LONG_UUID_LENGTH            16
-#define BLE_PACKET_SIZE             100
-#define MANUFACTURER_NAME           "Alphatronics"
+
+//needed for device Informaiton Service
+#define BLE_PACKET_SIZE             200                 //BLE Packet length -header
+#define MANUFACTURER_NAME           "Alphatronics"      // company name
 #define MODEL_NUM                   "0.1.1"
 #define HARDWARE_REVISION           "0.1.1"
 #define FIRMWARE_REVISION           "0.1.1"
