@@ -189,7 +189,6 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
             param_data = NULL;
             goto out;
         }
-        printf("Content len:%d\n",param_size);
         char* fetch_data = (char*)malloc(param_size*sizeof(uint8_t));
         if(!fetch_data){
             free(param_data);
@@ -244,10 +243,10 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
             sda_status_for_response = SDA_STATUS_ERROR;
             goto out;
         }
-        printf("param size:%d\n", param_size);
+        //printf("param size:%d\n", param_size);
         memset(path, 0, param_size);
         memcpy(&(path[0]), &(param_data[0][0]), param_size);
-        printf("Path:%s\n",path);
+        tr_info("File Path:%s",path);
         success = demo_callback_read_data((uint8_t*)path, param_size, response);// arr = path from where to read the file
         free(param_data);
         free(path);

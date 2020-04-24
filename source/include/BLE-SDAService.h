@@ -25,7 +25,7 @@
 #include "mbed.h"
 #include "./../../ble-config-uuid.h"
 
-#define TRACE_GROUP_BLE             "BLESDA"
+#define TRACE_GROUP                 "BLESDA"
 #define UPPER_BYTE_REQ_INDEX            3
 #define LOWER_BYTE_REQ_INDEX            4
 #define START_DATA_BYTE                 8

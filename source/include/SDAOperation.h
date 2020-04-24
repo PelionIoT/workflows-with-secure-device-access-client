@@ -39,6 +39,7 @@ enum sda_protocol_error_t{
     PT_ERR_WRITE_BLE,
     PT_ERR_SDA_REQ,
     PT_ERR_LOST_CONN,
+    PT_ERR_BUFF_OVERFLOW,
 };
 class SDAOperation{
     public:
