@@ -29,7 +29,7 @@ size_t BLESDA::write(uint8_t* buff, uint8_t length) {
     }
     else{
         ble.gap().startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
-        mbed_tracef(TRACE_ACTIVE_LEVEL_ERROR, TRACE_GROUP_BLE, "ble not connected, advertising started");
+        tr_error("ble not connected, advertising started");
         return 0;
     }
 	return length;
@@ -42,10 +42,10 @@ sda_protocol_error_t BLESDA::BLETX(Frag_buff* header, uint8_t len){
         uint8_t* msg = (uint8_t*)malloc(transmit_data_len*sizeof(uint8_t));
         memcpy(msg, header, START_DATA_BYTE);
         memcpy(&msg[START_DATA_BYTE], header->payload, len);
-        printf("\n---------------------------------------\n");
-        for(int i = 0 ; i < len; i++)
-            printf("%d ", msg[i]);
-        printf("\n---------------------------------------\n");
+        // printf("\n---------------------------------------\n");
+        // for(int i = 0 ; i < len; i++)
+        //     printf("%d ", msg[i]);
+        // printf("\n---------------------------------------\n");
         write(msg, transmit_data_len);
         //ThisThread::sleep_for(1000);
         //wait_ms(500);
@@ -80,7 +80,7 @@ sda_protocol_error_t BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_
             bool success = populate_fragment_data(&frag_sda,&sda_payload[fragmentStartOffset]);
             if(!success)
                 {
-                    mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP_BLE,"can not create payload for BLE");
+                    tr_error("can not create payload for BLE");
                     return PT_ERR_SEND_BLE;
                 }
             if(payloadsize < BLE_PACKET_SIZE)
@@ -111,7 +111,7 @@ sda_protocol_error_t BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_
             free(frag_sda.payload);
         }
         ble.gap().startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
-        mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP_BLE, "connection lost..now advertising!");
+        tr_error("connection lost..now advertising!");
         return PT_ERR_LOST_CONN;
     }
  }
@@ -120,12 +120,15 @@ sda_protocol_error_t BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_
 sda_protocol_error_t BLESDA::ProcessBuffer(Frag_buff* frag_sda){
     if(ble.gap().getState().connected) {
         uint8_t response[response_size]={0};
+        if(frag_sda->length >= 2300){
+            return PT_ERR_BUFF_OVERFLOW;//  sda generates almost 530 bytes of token with out parameters. Internally I have chosen the upper limit of file size
+            }                           //  is 2KB. This is done to safeguard the SDA Helper for not getting hardfault.
         uint16_t sda_response_size=0;
         if(msg_to_sda==NULL){
             msg_to_sda = (uint8_t*)malloc(frag_sda->length*sizeof(uint8_t));
         }
         if(msg_to_sda == NULL){
-            mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP_BLE,"Could not allocate memory for message to sda");
+            tr_error("Could not allocate memory for message to sda");
             return PT_ERR_MSG;
         }
         memcpy(&msg_to_sda[idx],frag_sda->payload, frag_sda->frag_length);
@@ -135,7 +138,7 @@ sda_protocol_error_t BLESDA::ProcessBuffer(Frag_buff* frag_sda){
         }
         else{
             idx = 0;
-            mbed_tracef(TRACE_LEVEL_INFO,TRACE_GROUP_BLE,"Sending buffer to SDA\r\n");
+            tr_info("Sending buffer to SDA");
             SDAOperation sda_operation(msg_to_sda);
             sda_protocol_error_t status = sda_operation.init(response,response_size,&sda_response_size);
             //printf("SDA Response size:%d", sda_response_size);
@@ -158,7 +161,7 @@ sda_protocol_error_t BLESDA::ProcessBuffer(Frag_buff* frag_sda){
 }
 
 void BLESDA::onDataWritten(const GattWriteCallbackParams *params) {
-    mbed_tracef(TRACE_LEVEL_INFO,TRACE_GROUP_BLE,"Data Received");
+    tr_info("Data Received");
     if (params->handle == getCharacteristicHandle()) {
     Frag_buff buffer = {0};
     bool success = populate_header(&buffer, params->data);
@@ -173,12 +176,12 @@ void BLESDA::onDataWritten(const GattWriteCallbackParams *params) {
     sda_protocol_error_t status = ProcessBuffer(&buffer);
     free(buffer.payload);
     if(status != PT_ERR_OK){
-        mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP_BLE, "Got err: (%d)",status);
+        tr_error("Got err: (%d)",status);
         return;
     	}
     }
     else{
-        mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP_BLE, "can not get characteristic handle");
+        tr_error("can not get characteristic handle");
         return;
     }
 }
