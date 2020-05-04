@@ -53,7 +53,6 @@ class SDAOperation{
         sda_protocol_error_t read_message_signature(uint8_t* message, size_t message_size);
 
     private:
-        size_t _read(uint8_t* buffer, size_t message_size);
         uint8_t _message_header[FTCD_MSG_HEADER_TOKEN_SIZE_BYTES]=FTCD_MSG_HEADER_TOKEN_SDA;
         int _index;
         uint32_t _message_size;

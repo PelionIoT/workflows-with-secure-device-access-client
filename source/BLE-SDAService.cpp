@@ -36,7 +36,6 @@ size_t BLESDA::write(uint8_t* buff, uint8_t length) {
 }
 
 sda_protocol_error_t BLESDA::BLETX(Frag_buff* header, uint8_t len){
-    uint8_t* msg = NULL;
     if(ble.gap().getState().connected) {
         uint8_t transmit_data_len = len+START_DATA_BYTE+1;
         uint8_t* msg = (uint8_t*)malloc(transmit_data_len*sizeof(uint8_t));
@@ -138,7 +137,7 @@ sda_protocol_error_t BLESDA::ProcessBuffer(Frag_buff* frag_sda){
         }
         else{
             idx = 0;
-            tr_info("Sending buffer to SDA");
+            printf("Sending buffer to SDA\n");
             SDAOperation sda_operation(msg_to_sda);
             sda_protocol_error_t status = sda_operation.init(response,response_size,&sda_response_size);
             //printf("SDA Response size:%d", sda_response_size);

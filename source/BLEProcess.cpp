@@ -179,7 +179,7 @@ bool BLEProcess::set_advertising_data()
         ble::LEGACY_ADVERTISING_HANDLE,
         ble::AdvertisingDataSimpleBuilder<ble::LEGACY_ADVERTISING_MAX_SIZE>()
             .setFlags()
-            .setName("Heimdall")
+            .setName(Device_Local_Name)
             .setLocalService(blesda->getUUID())
             .getAdvertisingData()
     );

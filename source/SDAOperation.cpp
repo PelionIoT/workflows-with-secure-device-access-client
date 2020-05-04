@@ -22,15 +22,6 @@
 
 #define TRACE_GROUP_PT "PT"
 
-size_t SDAOperation::_read(uint8_t* message, size_t message_size){
-    if(memcpy(message, &_buffer[START_DATA],message_size)==NULL){
-        mbed_tracef(TRACE_ACTIVE_LEVEL_ERROR, TRACE_GROUP_PT,"Can not read message");
-        return MBED_ERROR_ALLOC_FAILED;
-    }
-    _index +=message_size;
-    return message_size;
-}
-
 sda_protocol_error_t SDAOperation::is_token_detected(){
     for(int i = 0; i< FTCD_MSG_HEADER_TOKEN_SIZE_BYTES; i++) {
         if(_buffer[i]!=_message_header[i]){
