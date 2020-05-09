@@ -33,6 +33,6 @@ const uint8_t  CharacteristicUUID[LONG_UUID_LENGTH] = {
 };
 
 #if BLE_PACKET_SIZE == 0
-#error "Fill the configurations with the details like UUID, Name, BLE_PACKET_Size etc!"
+    #error "Fill the configurations with the details like UUID, Name, BLE_PACKET_Size etc!"
 #endif
 #endif
