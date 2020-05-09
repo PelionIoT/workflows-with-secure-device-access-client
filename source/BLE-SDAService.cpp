@@ -22,8 +22,7 @@ uint8_t g_seqnum = 0;
 uint16_t BLESDA::getCharacteristicHandle() {
     return sdaCharacteristic.getValueAttribute().getHandle();
 }
-
-size_t BLESDA::write(uint8_t* buff, uint8_t length) {
+size_t BLESDA::write(uint8_t* buff, volatile uint8_t length) {
     if (ble.gap().getState().connected) {
             ble.gattServer().write(getCharacteristicHandle(), static_cast<const uint8_t *>(buff), length);
     }
@@ -41,13 +40,7 @@ sda_protocol_error_t BLESDA::BLETX(Frag_buff* header, uint8_t len){
         uint8_t* msg = (uint8_t*)malloc(transmit_data_len*sizeof(uint8_t));
         memcpy(msg, header, START_DATA_BYTE);
         memcpy(&msg[START_DATA_BYTE], header->payload, len);
-        // printf("\n---------------------------------------\n");
-        // for(int i = 0 ; i < len; i++)
-        //     printf("%d ", msg[i]);
-        // printf("\n---------------------------------------\n");
         write(msg, transmit_data_len);
-        //ThisThread::sleep_for(1000);
-        //wait_ms(500);
         free(msg);
         msg = NULL;
         return PT_ERR_OK;

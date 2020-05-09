@@ -223,19 +223,6 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
             free(param_data);
             goto out;
         }
-        // uint8_t* path = (uint8_t*)malloc(param_size*sizeof(uint8_t));
-        // if(!path){
-        //     free(param_data);
-        //     tr_error("Can not allocate memory for path, not enough space");
-        //     sda_status_for_response = SDA_STATUS_ERROR;
-        //     goto out;
-        // }
-        // memcpy(&(path[0]),&(param_data[0][0]), param_size);
-        // printf("Path:%s\n",path);
-        // param_size = 0;
-        // success = demo_callback_read_data(path, response);// arr = path from where to read the file
-        // free(param_data);
-        // free(path);
         char* path = (char*)malloc(param_size*sizeof(char));
         if(!path){
             free(param_data);

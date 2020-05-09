@@ -23,7 +23,7 @@
 #include "SDAOperation.h"
 #include "mbed_trace.h"
 #include "mbed.h"
-#include "./../../ble-config-uuid.h"
+#include "ble-config-uuid.h"
 
 #define TRACE_GROUP                 "BLESDA"
 #define UPPER_BYTE_REQ_INDEX            3
@@ -69,6 +69,7 @@ public:
     sda_protocol_error_t processRequest(Frag_buff* frag_sda);
 
 private:
+    void delay();
     char* getEndpoint();
     events::EventQueue &_event_queue;
     BLE                 &ble;

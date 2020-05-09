@@ -110,13 +110,13 @@ bool demo_callback_writedata(uint8_t* data, uint16_t data_len) {
     char final_path[path_len]={0};
     char final_data[data_len]={0};
     sprintf(final_path,"/fs/%s",(char*)token);
-    printf("Writing file in path:%s\n",final_path);
+    tr_info("Writing file in path:%s\n",final_path);
     FILE* f = fopen(final_path, "w");
     if(f!=NULL) {
         token=strtok(NULL, "^");
         snprintf(final_data, (data_len-4), "%s", token);            //removing the length of appended path /fs/ length from the data length.
-        //printf("Data is: %s\n",final_data);
         tr_info("Data is: %s\n",final_data);
+        tr_info("Data is: %s",final_data);
         if(fprintf(f,"%s\r\n", (const char*)final_data)){
             fflush(f);
             fclose(f);
@@ -141,7 +141,7 @@ bool demo_callback_read_data(uint8_t* path, uint8_t path_size,char* response)
     uint8_t path_len = path_size+4+1;
     char final_path[path_len]={0};
     snprintf(final_path, path_len, "/fs/%s",(char*)path);
-    printf("Reading data from file-path:%s\n",final_path);
+    tr_info("Reading data from file-path:%s",final_path);
     FILE* r = fopen(final_path, "r");
     if(!r){
         tr_error("Can not open file %s",strerror(errno));
@@ -151,7 +151,6 @@ bool demo_callback_read_data(uint8_t* path, uint8_t path_size,char* response)
     tr_info("File read starting");
     fscanf(r, "%[^\0]", response);
     fclose(r);
-    //printf("%s",response);
     tr_info("Data is: %s",response);
     tr_info("File read complete");
     //free(final_path);
