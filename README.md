@@ -34,6 +34,10 @@ Click actions and Generate developer certificate,
 Give a name and an optional description to the certificate.
 Download the certificate file mbed_cloud_dev_credentials.c
 
+## Factory Provisioning
+
+For factory provisioning, refer this doc:https://www.pelion.com/docs/device-management-provision/1.2/introduction/index.html
+
 ## Example for BLE Config File
 
 Please note that this is just an example, you may want to use your own UUID.
