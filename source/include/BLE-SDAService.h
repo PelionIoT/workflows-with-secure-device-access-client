@@ -55,7 +55,7 @@ public:
 
     uint16_t getCharacteristicHandle();
 
-    const uint8_t* getUUID(){   //small method that returns UUID of the service.
+    const uint8_t* getUUID(){
         return ServiceUUID;
     }
 

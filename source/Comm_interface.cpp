@@ -20,20 +20,23 @@
 #include "include/BLEProcess.h"
 #include "include/Comm_interface.h"
 
-bool Comm_interface::init(char* endpoint){
+bool Comm_interface::init(char* endpoint)
+{
     BLE &ble_interface = BLE::Instance();
     _bleprocess = new BLEProcess(_event_queue, ble_interface, endpoint);
-    if(!_bleprocess){
+    if(!_bleprocess)
+    {
         return false;
     }
     _bleprocess->on_init(NULL);
     return true;
 }
-bool Comm_interface::start() {
+bool Comm_interface::start()
+{
     bool status = _bleprocess->start();
-    if(status) {
+    if(status)
+    {
     _event_queue.dispatch_forever();
     }
     return status;
 }
-

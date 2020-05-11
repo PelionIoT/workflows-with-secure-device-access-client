@@ -38,7 +38,7 @@
 #include "sda_demo.h"
 
 
-#define TRACE_GROUP           "sdae"
+#define TRACE_GROUP           "sdah"
 
 extern const uint8_t MBED_CLOUD_TRUST_ANCHOR_PK[];
 extern const uint32_t MBED_CLOUD_TRUST_ANCHOR_PK_SIZE;
@@ -46,7 +46,8 @@ extern const char MBED_CLOUD_TRUST_ANCHOR_PK_NAME[];
 size_t param_size = 0;
 
 
-char* get_endpoint_name(){
+char* get_endpoint_name()
+{
     kcm_status_e kcm_status = KCM_STATUS_SUCCESS;
     char* endpoint_name = NULL;
     size_t endpoint_buffer_size;
@@ -55,8 +56,9 @@ char* get_endpoint_name(){
 
     // Get endpoint name data size
     kcm_status = kcm_item_get_data_size((const uint8_t*)g_fcc_endpoint_parameter_name, strlen(g_fcc_endpoint_parameter_name), KCM_CONFIG_ITEM, &endpoint_name_size);
-    if (kcm_status != KCM_STATUS_SUCCESS) {
-        printf("kcm_item_get_data_size failed (%u)", kcm_status);
+    if (kcm_status != KCM_STATUS_SUCCESS)
+    {
+        tr_error("kcm_item_get_data_size failed (%u)", kcm_status);
         return NULL;
     }
 
@@ -65,22 +67,18 @@ char* get_endpoint_name(){
     endpoint_name = (char*)malloc(endpoint_buffer_size);
     memset(endpoint_name, 0, endpoint_buffer_size);
     kcm_status = kcm_item_get_data((const uint8_t*)g_fcc_endpoint_parameter_name, strlen(g_fcc_endpoint_parameter_name), KCM_CONFIG_ITEM, (uint8_t*)endpoint_name, endpoint_name_size, &endpoint_name_size);
-    if (kcm_status != KCM_STATUS_SUCCESS) {
+    if (kcm_status != KCM_STATUS_SUCCESS)
+    {
         free(endpoint_name);
-        printf("kcm_item_get_data failed (%u)", kcm_status);
+        tr_error("kcm_item_get_data failed (%u)", kcm_status);
         return NULL;
     }
-
-    // save endpoint_name for later use
-
-    //printf("inside get_endpoint Endpoint name: %s\r\n", endpoint_name);
 
     return endpoint_name;
 }
 
 bool process_request_fetch_response(const uint8_t *request,uint32_t request_size,uint8_t *response,size_t response_max_size, size_t *response_actual_size)
 {
-    //printf("Here in sda process fetch response\r\n");
     sda_status_e sda_status = SDA_STATUS_SUCCESS;
     //Call to sda_operation_process to process current message, the response message will be returned as output.
     sda_status = sda_operation_process(request, request_size, *application_callback, NULL, response, response_max_size, response_actual_size);
@@ -108,7 +106,6 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
     SDA_UNUSED_PARAM(callback_param);
     char response[ResponseBufferLength]={};
     sda_status = sda_command_type_get(handle, &command_type);
-    //printf("Here in application callback\r\n");
     if (sda_status != SDA_STATUS_SUCCESS) {
         tr_error("Secure-Device-Access failed getting command type (%u)", sda_status);
         sda_status_for_response = sda_status;
@@ -156,33 +153,23 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
     *
     *   - Note that "update" is a common command for both.
     */
-
-    if (memcmp(func_callback_name, "configure", func_callback_name_size) == 0) {
-
-        /***
-        * This function accesses the LCD peripheral and sets the current outside temperature.
-        * The provided scope must be in form of demo_callback_update_temperature.
-        * It gets the temperature value to set as a parameter
-        */
-
-        //int64_t temperature = 0;
-
-        // // Get the temperature to display
-        // sda_status = sda_func_call_numeric_parameter_get(handle, 0, &temperature);
-        // if (sda_status != SDA_STATUS_SUCCESS) {
-        //     tr_error("Failed getting demo_callback_configure() numeric param[0] (%u)", sda_status);
-        //     sda_status_for_response = sda_status;
-        //     goto out;
-        // }
-
+    /***
+    * configure is the task to write the content coming in the SDA Request in the file. 
+    * Function param that comes with "configure" request contains the data that needed to write
+    * as well as the path where the file will be written.
+    */
+    if (memcmp(func_callback_name, "configure", func_callback_name_size) == 0)
+    {
         const uint8_t** param_data = (const uint8_t**)calloc(500, sizeof(uint8_t*));// 500* 4 is 2000 Bytes which is the response buffer length.
-        if(!param_data){
+        if(!param_data)
+        {
             tr_error("Can not allocate memory for param_data, not enough space");
             sda_status_for_response = SDA_STATUS_ERROR;
             goto out;
         }
         sda_status = sda_func_call_data_parameter_get(handle, 0, param_data, &param_size);
-        if (sda_status != SDA_STATUS_SUCCESS) {
+        if (sda_status != SDA_STATUS_SUCCESS)
+        {
             tr_error("sda_func_call_data_parameter_get() (%u)", sda_status);
             sda_status_for_response = sda_status;
             free(param_data);
@@ -190,7 +177,8 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
             goto out;
         }
         char* fetch_data = (char*)malloc(param_size*sizeof(uint8_t));
-        if(!fetch_data){
+        if(!fetch_data)
+        {
             free(param_data);
             tr_error("Can not allocate memory for fetch data, not enough space");
             sda_status_for_response = SDA_STATUS_ERROR;
@@ -198,46 +186,54 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
         }
         memset(fetch_data,0,param_size);
         memcpy(&(fetch_data[0]),&(param_data[0][0]), param_size);
-        success = demo_callback_writedata((uint8_t*)fetch_data, param_size);
+        success = demo_callback_writedata((uint8_t*)fetch_data, param_size, response);
         free(param_data);
         free(fetch_data);
-        if (!success) {
+        if (!success)
+        {
             tr_error("demo_callback_writedata() failed");
             sda_status_for_response = SDA_STATUS_OPERATION_EXECUTION_ERROR;
             goto out;
         }
-        sprintf(response,"File Write Complete");
     }
-    else if (memcmp(func_callback_name, "read-data", func_callback_name_size) == 0) {
+    /***
+     * This function reads the data that is there in the file.
+     * There is only one param with this function and that is path of the file that user want to read.
+     * This function is extracting the function param from the SDA request and call the demo function to get the response.
+    */
+    else if (memcmp(func_callback_name, "read-data", func_callback_name_size) == 0)
+    {
 
         const uint8_t** param_data = (const uint8_t**)calloc(15, sizeof(uint8_t*));//15*4 is 60 Bytes which is the length for path name.
-        if(!param_data){
+        if(!param_data)
+        {
             tr_error("Can not allocate memory for param_data, not enough space");
             sda_status_for_response = SDA_STATUS_ERROR;
             goto out;
         }
         sda_status = sda_func_call_data_parameter_get(handle, 0, param_data, &param_size);
-        if (sda_status != SDA_STATUS_SUCCESS) {
+        if (sda_status != SDA_STATUS_SUCCESS)
+        {
             tr_error("Please give the file path (%u)", sda_status);
             sda_status_for_response = sda_status;
             free(param_data);
             goto out;
         }
         char* path = (char*)malloc(param_size*sizeof(char));
-        if(!path){
+        if(!path)
+        {
             free(param_data);
             tr_error("Can not allocate memory for path, not enough space");
             sda_status_for_response = SDA_STATUS_ERROR;
             goto out;
         }
-        //printf("param size:%d\n", param_size);
         memset(path, 0, param_size);
         memcpy(&(path[0]), &(param_data[0][0]), param_size);
-        tr_info("File Path:%s",path);
-        success = demo_callback_read_data((uint8_t*)path, param_size, response);// arr = path from where to read the file
+        success = demo_callback_read_data((uint8_t*)path, param_size, response);
         free(param_data);
         free(path);
-        if (!success) {
+        if (!success)
+        {
             tr_error("demo_callback_read_data() failed");
             sda_status_for_response = SDA_STATUS_OPERATION_EXECUTION_ERROR;
             goto out;
@@ -298,7 +294,6 @@ sda_status_e application_callback(sda_operation_ctx_h handle, void *callback_par
     }
 
     // flow succeeded
-    //printf("(%.*s) execution succeeded", (int)func_callback_name_size, func_callback_name);
 out:
 
     if ((sda_status_for_response != SDA_STATUS_SUCCESS) && (sda_status_for_response != SDA_STATUS_NO_MORE_SCOPES)) {
@@ -327,7 +322,8 @@ sda_status_e is_operation_permitted(sda_operation_ctx_h operation_context, const
         goto access_denied;
     }
 
-    if (status != SDA_STATUS_SUCCESS) {
+    if (status != SDA_STATUS_SUCCESS)
+    {
         tr_error("Failed getting scope, permission denied");
         goto access_denied;
     }
@@ -339,7 +335,7 @@ sda_status_e is_operation_permitted(sda_operation_ctx_h operation_context, const
     // Check operation is in scope
 
     // Check that function name has the exact scope size
-    if (scope_size != func_name_size) {
+    if (scope_size != func_name_size){
     }
 
     // Check that function name and scope are binary equal
@@ -374,7 +370,8 @@ bool factory_setup(void)
     // Initializes FCC to be able to call FCC APIs
     // TBD: SDA should be able to run without FCC init
     fcc_status = fcc_init();
-    if (fcc_status != FCC_STATUS_SUCCESS) {
+    if (fcc_status != FCC_STATUS_SUCCESS)
+    {
         status = false;
         tr_error("Failed to initialize Factory-Configurator-Client (%u)", fcc_status);
         goto out;
@@ -391,7 +388,8 @@ bool factory_setup(void)
     // Call developer flow
     tr_cmdline("Start developer flow");
     fcc_status = fcc_developer_flow();
-    if (fcc_status != FCC_STATUS_SUCCESS) {
+    if (fcc_status != FCC_STATUS_SUCCESS)
+    {
         tr_error("fcc_developer_flow failed (%u)", fcc_status);
         status = false;
         goto out;
@@ -409,7 +407,8 @@ bool factory_setup(void)
 #endif
 
     fcc_status = fcc_verify_device_configured_4mbed_cloud();
-    if (fcc_status != FCC_STATUS_SUCCESS) {
+    if (fcc_status != FCC_STATUS_SUCCESS)
+    {
         status = false;
         goto out;
     }
@@ -422,14 +421,17 @@ bool factory_setup(void)
 out:
     // Finalize FFC
     fcc_status = fcc_finalize();
-    if (status == false) {
+    if (status == false)
+    {
         return false;
-    } else {
-        if (fcc_status != FCC_STATUS_SUCCESS) {
+    }
+    else
+    {
+        if (fcc_status != FCC_STATUS_SUCCESS)
+        {
             tr_error("Failed finalizing Factory-Configurator-Client");
             return false;
         }
     }
-
     return status;
 }

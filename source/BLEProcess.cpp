@@ -41,10 +41,10 @@ void BLEProcess::on_init(mbed::Callback<void(BLE&, events::EventQueue&)> cb)
  */
 bool BLEProcess::start()
 {
-    printf("Ble process started.\r\n");
+    tr_info("Ble process started.");
 
     if (_ble_interface.hasInitialized()) {
-        printf("Error: the ble instance has already been initialized.\r\n");
+        tr_error("Error: the ble instance has already been initialized.");
         return false;
     }
     _ble_interface.onEventsToProcess(
@@ -56,7 +56,7 @@ bool BLEProcess::start()
     );
 
     if (error) {
-        printf("Error: %u returned by BLE::init.\r\n", error);
+        tr_error("Error: %u returned by BLE::init.", error);
         return false;
     }
     return true;
@@ -69,7 +69,7 @@ void BLEProcess::stop()
 {
     if (_ble_interface.hasInitialized()) {
         _ble_interface.shutdown();
-        printf("Ble process stopped.");
+        tr_info("Ble process stopped.");
     }
 }
 
@@ -90,10 +90,10 @@ void BLEProcess::when_init_complete(BLE::InitializationCompleteCallbackContext *
 {
 
     if (event->error) {
-        printf("Error %u during the initialization\r\n", event->error);
+        tr_error("Error %u during the initialization\r\n", event->error);
         return;
     }
-    printf("Ble instance initialized\r\n");
+    tr_info("Ble instance initialized\r\n");
 
     Gap &gap = _ble_interface.gap();
     gap.onConnection(this, &BLEProcess::when_connection);
@@ -127,13 +127,13 @@ void BLEProcess::when_init_complete(BLE::InitializationCompleteCallbackContext *
 
 void BLEProcess::when_connection(const Gap::ConnectionCallbackParams_t *connection_event)
 {
-    printf("Connected.\r\n");
+    tr_info("Connected.\r\n");
 }
 
 
 void BLEProcess::when_disconnection(const Gap::DisconnectionCallbackParams_t *event)
 {
-    printf("Disconnected.\r\n");
+    tr_info("Disconnected.\r\n");
     start_advertising();
 }
 
@@ -144,11 +144,14 @@ bool BLEProcess::start_advertising(void)
     /* Start advertising the set */
     ble_error_t error = gap.startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
 
-    if (error) {
-        printf("Error %u during gap.startAdvertising.\r\n", error);
+    if (error)
+    {
+        tr_error("Error %u during gap.startAdvertising.\r\n", error);
         return false;
-    } else {
-        printf("Advertising started.\r\n");
+    }
+    else
+    {
+        tr_info("Advertising started.\r\n");
         return true;
     }
 }
@@ -156,17 +159,14 @@ bool BLEProcess::start_advertising(void)
 bool BLEProcess::set_advertising_parameters()
 {
     Gap &gap = _ble_interface.gap();
-
     ble_error_t error = gap.setAdvertisingParameters(
         ble::LEGACY_ADVERTISING_HANDLE,
-        ble::AdvertisingParameters()
-    );
-
-    if (error) {
-        printf("Gap::setAdvertisingParameters() failed with error %d", error);
+        ble::AdvertisingParameters());
+    if (error)
+    {
+        tr_error("Gap::setAdvertisingParameters() failed with error %d", error);
         return false;
     }
-
     return true;
 }
 
@@ -184,11 +184,11 @@ bool BLEProcess::set_advertising_data()
             .getAdvertisingData()
     );
 
-    if (error) {
-        printf("Gap::setAdvertisingPayload() failed with error %d", error);
+    if (error)
+    {
+        tr_error("Gap::setAdvertisingPayload() failed with error %d", error);
         return false;
     }
 
     return true;
 }
-

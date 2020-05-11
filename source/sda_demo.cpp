@@ -14,8 +14,6 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#ifndef SDAE_INTERNAL_DEMO
-
 #include "include/sda_demo.h"
 #include "mbed.h"
 #include "PinNames.h"
@@ -26,7 +24,7 @@
 #include "BlockDevice.h"
 
 /////////////////////// DEFINITIONS ///////////////////////
-#define TRACE_GROUP           "sdae"
+#define TRACE_GROUP           "sdad"
 
 // Color value is simple bitfield of 3 led bits (blue, green, red)
 #define LED_CL_BLACK    7 // OFF
@@ -77,7 +75,8 @@ static void emulate_operation(const char* operation_name, uint32_t color, size_t
 {
     uint32_t prev_color = get_led_color();
 
-    if (operation_name) {
+    if (operation_name)
+    {
         tr_cmdline("proccess operation %s", operation_name);
     }
 
@@ -104,32 +103,37 @@ void display_faulty_message(const char *fault_message)
 }
 
 // path+content
-bool demo_callback_writedata(uint8_t* data, uint16_t data_len) {
+bool demo_callback_writedata(uint8_t* data, uint16_t data_len, char* response)
+{
     char* token = strtok((char*)data,SEPERATOR);
     uint8_t path_len = strlen(token)+4;
     char final_path[path_len]={0};
     char final_data[data_len]={0};
-    sprintf(final_path,"/fs/%s",(char*)token);
+    tr_info(final_path,"/fs/%s",(char*)token);
     tr_info("Writing file in path:%s\n",final_path);
     FILE* f = fopen(final_path, "w");
-    if(f!=NULL) {
+    if(f!=NULL)
+    {
         token=strtok(NULL, "^");
         snprintf(final_data, (data_len-4), "%s", token);            //removing the length of appended path /fs/ length from the data length.
-        tr_info("Data is: %s\n",final_data);
         tr_info("Data is: %s",final_data);
-        if(fprintf(f,"%s\r\n", (const char*)final_data)){
+        if(fprintf(f,"%s\r\n", (const char*)final_data))
+        {
+            sprintf(response,"File write completed!");
             fflush(f);
             fclose(f);
             return true;
         }
-        else{
+        else
+        {
             fflush(f);
             fclose(f);
             token = NULL;
             return false;
         }
     }
-    else {
+    else
+    {
         tr_error("Err: %s",strerror(errno));
         free(final_path);
         return false;
@@ -138,22 +142,22 @@ bool demo_callback_writedata(uint8_t* data, uint16_t data_len) {
 // response pointer should be allocated before calling this function
 bool demo_callback_read_data(uint8_t* path, uint8_t path_size,char* response)
 {
-    uint8_t path_len = path_size+4+1;
+    uint8_t path_len = path_size+4+1;                                   // because we have added /fs/ to the front of the file name
     char final_path[path_len]={0};
     snprintf(final_path, path_len, "/fs/%s",(char*)path);
     tr_info("Reading data from file-path:%s",final_path);
     FILE* r = fopen(final_path, "r");
-    if(!r){
+    if(!r)
+    {
         tr_error("Can not open file %s",strerror(errno));
         tr_error("Err: %s",strerror(errno));
         return false;
-        }
+    }
     tr_info("File read starting");
-    fscanf(r, "%[^\0]", response);
+    fscanf(r, "%[^\0]", response);                                  // reading file till NULL. That means reading the entire file in a string.
     fclose(r);
     tr_info("Data is: %s",response);
     tr_info("File read complete");
-    //free(final_path);
     return true;
 }
 
@@ -181,5 +185,3 @@ bool demo_callback_diagnostics(void)
     emulate_operation("read", LED_CL_PINK, 5);
     return true;
 }
-
-#endif // SDAE_INTERNAL_DEMO

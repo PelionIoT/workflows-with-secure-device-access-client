@@ -49,17 +49,4 @@ bool populate_header(Frag_buff* buff, const uint8_t* header_data);
 bool populate_data(Frag_buff* buff, const uint8_t* payload_data);
 bool populate_fragment_data(Frag_buff* buff, const uint8_t* data);
 bool is_last_fragment(Frag_buff* buff);
-
 #endif
-
-
-
-
-
-
-
-
-
-
-
-

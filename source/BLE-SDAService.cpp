@@ -19,14 +19,18 @@ using mbed::callback;
 #define response_size 1000
 uint16_t idx = 0;
 uint8_t g_seqnum = 0;
-uint16_t BLESDA::getCharacteristicHandle() {
+volatile int count = 0;
+uint16_t BLESDA::getCharacteristicHandle()
+{
     return sdaCharacteristic.getValueAttribute().getHandle();
 }
-size_t BLESDA::write(uint8_t* buff, volatile uint8_t length) {
+size_t BLESDA::write(uint8_t* buff, volatile uint8_t length)
+{
     if (ble.gap().getState().connected) {
             ble.gattServer().write(getCharacteristicHandle(), static_cast<const uint8_t *>(buff), length);
     }
-    else{
+    else
+    {
         ble.gap().startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
         tr_error("ble not connected, advertising started");
         return 0;
@@ -35,7 +39,8 @@ size_t BLESDA::write(uint8_t* buff, volatile uint8_t length) {
 }
 
 sda_protocol_error_t BLESDA::BLETX(Frag_buff* header, uint8_t len){
-    if(ble.gap().getState().connected) {
+    if(ble.gap().getState().connected)
+    {
         uint8_t transmit_data_len = len+START_DATA_BYTE+1;
         uint8_t* msg = (uint8_t*)malloc(transmit_data_len*sizeof(uint8_t));
         memcpy(msg, header, START_DATA_BYTE);
@@ -45,7 +50,8 @@ sda_protocol_error_t BLESDA::BLETX(Frag_buff* header, uint8_t len){
         msg = NULL;
         return PT_ERR_OK;
     }
-    else {
+    else
+    {
         // clearing up the message just created if the connection drops.
         ble.gap().startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
         return PT_ERR_LOST_CONN;
@@ -57,7 +63,8 @@ sda_protocol_error_t BLESDA::BLETX(Frag_buff* header, uint8_t len){
 sda_protocol_error_t BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_t payloadsize, uint8_t type)
 {
     Frag_buff frag_sda = {0};
-    if(ble.gap().getState().connected) {
+    if(ble.gap().getState().connected)
+    {
         uint8_t fragmentStartOffset=0;
         static uint8_t frag_num=0;
         uint16_t totalpayloadsize=payloadsize;
@@ -84,7 +91,6 @@ sda_protocol_error_t BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_
                 fragmentStartOffset+=frag_sda.frag_length;
             }
             //Transmit it to BLE
-            //_event_queue.call(this, &BLESDA::BLETX, &frag_sda, frag_sda.frag_length);
             sda_protocol_error_t status = BLETX(&frag_sda,frag_sda.frag_length);
             free(frag_sda.payload);
             if(status != PT_ERR_OK){
@@ -97,9 +103,11 @@ sda_protocol_error_t BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_
         g_seqnum = g_seqnum+1;
         return PT_ERR_OK;
     }
-    else{
+    else
+    {
         //clearing up the buffer just created if the connection drops.
-        if(frag_sda.payload){
+        if(frag_sda.payload)
+        {
             free(frag_sda.payload);
         }
         ble.gap().startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
@@ -109,34 +117,40 @@ sda_protocol_error_t BLESDA::sda_fragment_datagram(uint8_t* sda_payload, uint16_
  }
 
 
-sda_protocol_error_t BLESDA::ProcessBuffer(Frag_buff* frag_sda){
-    if(ble.gap().getState().connected) {
+sda_protocol_error_t BLESDA::ProcessBuffer(Frag_buff* frag_sda)
+{
+    if(ble.gap().getState().connected)
+    {
         uint8_t response[response_size]={0};
-        if(frag_sda->length >= 2300){
+        if(frag_sda->length >= 2300)
+        {
             return PT_ERR_BUFF_OVERFLOW;//  sda generates almost 530 bytes of token with out parameters. Internally I have chosen the upper limit of file size
-            }                           //  is 2KB. This is done to safeguard the SDA Helper for not getting hardfault.
+        }                               //  is 2KB. This is done to safeguard the SDA Helper for not getting hardfault.
         uint16_t sda_response_size=0;
-        if(msg_to_sda==NULL){
+        if(msg_to_sda==NULL)
+        {
             msg_to_sda = (uint8_t*)malloc(frag_sda->length*sizeof(uint8_t));
         }
-        if(msg_to_sda == NULL){
+        if(msg_to_sda == NULL)
+        {
             tr_error("Could not allocate memory for message to sda");
             return PT_ERR_MSG;
         }
         memcpy(&msg_to_sda[idx],frag_sda->payload, frag_sda->frag_length);
-        if(!is_last_fragment(frag_sda)){
+        if(!is_last_fragment(frag_sda))
+        {
             idx +=frag_sda->frag_length;
             return PT_ERR_OK;
         }
         else{
             idx = 0;
-            printf("Sending buffer to SDA\n");
+            tr_info("Sending buffer to SDA\n");
             SDAOperation sda_operation(msg_to_sda);
             sda_protocol_error_t status = sda_operation.init(response,response_size,&sda_response_size);
-            //printf("SDA Response size:%d", sda_response_size);
             free(msg_to_sda);
             msg_to_sda = NULL;
-            if(status !=PT_ERR_OK){
+            if(status !=PT_ERR_OK)
+            {
                 return status;
             }
             return sda_fragment_datagram(response, sda_response_size, SDA_DATA);
@@ -144,7 +158,8 @@ sda_protocol_error_t BLESDA::ProcessBuffer(Frag_buff* frag_sda){
     }
     else{
         //if ble disconnects then we need to advertise and clear the array.
-        if(msg_to_sda){
+        if(msg_to_sda)
+        {
             free(msg_to_sda);
         }
         ble.gap().startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);// start advertising.
@@ -152,27 +167,33 @@ sda_protocol_error_t BLESDA::ProcessBuffer(Frag_buff* frag_sda){
     }
 }
 
-void BLESDA::onDataWritten(const GattWriteCallbackParams *params) {
+void BLESDA::onDataWritten(const GattWriteCallbackParams *params)
+{
     tr_info("Data Received");
-    if (params->handle == getCharacteristicHandle()) {
-    Frag_buff buffer = {0};
-    bool success = populate_header(&buffer, params->data);
-    if(!success){
-        return;
-    }
-    success = populate_data(&buffer, params->data);
+    if (params->handle == getCharacteristicHandle())
+    {
+        Frag_buff buffer = {0};
+        bool success = populate_header(&buffer, params->data);
+        if(!success)
+        {
+            return;
+        }
+        success = populate_data(&buffer, params->data);
 
-    if(!success){
-        return;
+        if(!success)
+        {
+            return;
+        }
+        sda_protocol_error_t status = ProcessBuffer(&buffer);
+        free(buffer.payload);
+        if(status != PT_ERR_OK)
+        {
+            tr_error("Got err: (%d)",status);
+            return;
+        }
     }
-    sda_protocol_error_t status = ProcessBuffer(&buffer);
-    free(buffer.payload);
-    if(status != PT_ERR_OK){
-        tr_error("Got err: (%d)",status);
-        return;
-    	}
-    }
-    else{
+    else
+    {
         tr_error("can not get characteristic handle");
         return;
     }
