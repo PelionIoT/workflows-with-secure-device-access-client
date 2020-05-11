@@ -27,5 +27,4 @@ bool demo_callback_update(void);
 bool demo_callback_restart(void);
 bool demo_callback_diagnostics(void);
 bool demo_callback_writedata(uint8_t*, uint16_t, char*);
-
 #endif //__SDA_DEMO_H__

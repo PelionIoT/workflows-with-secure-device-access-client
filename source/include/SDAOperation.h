@@ -43,7 +43,7 @@ enum sda_protocol_error_t{
 };
 class SDAOperation{
     public:
-        SDAOperation(uint8_t* request)://_buffer = request;
+        explicit SDAOperation(uint8_t* request)://_buffer = request;
                     _index(0),_message_size(0),_buffer(request) {
         };
         sda_protocol_error_t init(uint8_t* response,size_t response_max_size, uint16_t* response_size);
@@ -58,5 +58,4 @@ class SDAOperation{
         uint32_t _message_size;
         uint8_t* _buffer;
 };
-
 #endif

@@ -106,10 +106,10 @@ void display_faulty_message(const char *fault_message)
 bool demo_callback_writedata(uint8_t* data, uint16_t data_len, char* response)
 {
     char* token = strtok((char*)data,SEPERATOR);
-    uint8_t path_len = strlen(token)+4;
+    uint8_t path_len = strlen(token)+4+1;
     char final_path[path_len]={0};
     char final_data[data_len]={0};
-    tr_info(final_path,"/fs/%s",(char*)token);
+    sprintf(final_path,"%s",(char*)token);
     tr_info("Writing file in path:%s\n",final_path);
     FILE* f = fopen(final_path, "w");
     if(f!=NULL)
