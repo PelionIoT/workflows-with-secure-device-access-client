@@ -45,7 +45,7 @@ Please note that this is just an example, you may want to use your own UUID.
 * Add BLE Packet Size between 23 to 244. It should be '8' less than the MTU. For example:
 
 ```C
-#define BLE_PACKET_SIZE 200
+#define BLE_PACKET_SIZE             200
 #define Device_Local_Name           "DISCO"
 #define MANUFACTURER_NAME           "ARM"
 #define MODEL_NUM                   "0.1.1"
