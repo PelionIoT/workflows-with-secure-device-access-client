@@ -1,6 +1,5 @@
 BUILD
 mbed_cloud_dev_credentials.c
-shields
 mbed_cloud_trust_anchor_credentials.c
 mbed-os
 mbed_cloud_client_user_config.h
