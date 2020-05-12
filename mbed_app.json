@@ -43,7 +43,9 @@
             "storage_tdb_internal.internal_base_address" : "(MBED_ROM_START + MBED_BOOTLOADER_SIZE)",
             "storage_tdb_internal.internal_size"         : "(2*16*1024)",
             "mbedtls-user-config-file"                   : "\"mbedTLSConfig_mbedOS.h\"",
-            "pal-user-defined-config"                    : "\"pal_config_MbedOS.h\""
+            "pal-user-defined-config"                    : "\"pal_config_MbedOS.h\"",
+            "cordio.desired-att-mtu"                     : "244",
+            "cordio.rx-acl-buffer-size"                  : "244"
         }
     },
     "config": {
