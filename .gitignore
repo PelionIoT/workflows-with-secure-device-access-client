@@ -1,9 +1,6 @@
 BUILD
-mbed_cloud_dev_credentials.c
-mbed_cloud_trust_anchor_credentials.c
 mbed-os
 mbed_cloud_client_user_config.h
 mbed-cloud-client-platform-common
 mbed-cloud-client
 .vscode
-mbed_config.h
