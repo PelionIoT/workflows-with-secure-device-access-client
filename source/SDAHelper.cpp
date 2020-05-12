@@ -1,12 +1,12 @@
 // ----------------------------------------------------------------------------
 // Copyright 2017-2019 ARM Ltd.
-//  
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//  
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,21 +14,15 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-// Note: this macro is needed on armcc to get the the PRI*32 macros
-// from inttypes.h in a C++ code.
 #include "SDAHelper.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
-
 #include "mcc_common_setup.h"
 #include "sda_macros.h"
-
 #include "pal.h"
-
 #include "factory_configurator_client.h"
 #include "key_config_manager.h"
-
 #include "sda_status.h"
 #include "secure_device_access.h"
 #include "ftcd_comm_base.h"
@@ -36,9 +30,6 @@
 #include "mbed-trace-helper.h"
 #include "mbed_stats_helper.h"
 #include "sda_demo.h"
-
-
-#define TRACE_GROUP           "sdah"
 
 extern const uint8_t MBED_CLOUD_TRUST_ANCHOR_PK[];
 extern const uint32_t MBED_CLOUD_TRUST_ANCHOR_PK_SIZE;

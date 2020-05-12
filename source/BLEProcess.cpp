@@ -1,23 +1,21 @@
-/* mbed Microcontroller Library
- * Copyright (c) 2017 ARM Limited
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-
+// ----------------------------------------------------------------------------
+// Copyright 2017-2019 ARM Ltd.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ----------------------------------------------------------------------------
 
 #include "include/BLEProcess.h"
-#include "./../ble-config-uuid.h"
+#include "ble-config.h"
 #include <stdint.h>
 #include <stdio.h>
 #include "events/EventQueue.h"
@@ -30,6 +28,7 @@
 #include "ble/FunctionPointerWithContext.h"
 
 using namespace mbed;
+#define TRACE_GROUP           "blep"
 
 void BLEProcess::on_init(mbed::Callback<void(BLE&, events::EventQueue&)> cb)
 {
@@ -93,7 +92,7 @@ void BLEProcess::when_init_complete(BLE::InitializationCompleteCallbackContext *
         tr_error("Error %u during the initialization\r\n", event->error);
         return;
     }
-    tr_info("Ble instance initialized\r\n");
+    tr_info("Ble instance initialized");
 
     Gap &gap = _ble_interface.gap();
     gap.onConnection(this, &BLEProcess::when_connection);
@@ -127,13 +126,13 @@ void BLEProcess::when_init_complete(BLE::InitializationCompleteCallbackContext *
 
 void BLEProcess::when_connection(const Gap::ConnectionCallbackParams_t *connection_event)
 {
-    tr_info("Connected.\r\n");
+    tr_info("Connected.");
 }
 
 
 void BLEProcess::when_disconnection(const Gap::DisconnectionCallbackParams_t *event)
 {
-    tr_info("Disconnected.\r\n");
+    tr_info("Disconnected.");
     start_advertising();
 }
 
@@ -151,7 +150,7 @@ bool BLEProcess::start_advertising(void)
     }
     else
     {
-        tr_info("Advertising started.\r\n");
+        tr_info("Advertising started.");
         return true;
     }
 }

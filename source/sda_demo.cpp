@@ -109,15 +109,15 @@ bool demo_callback_writedata(uint8_t* data, uint16_t data_len, char* response)
     uint8_t path_len = strlen(token)+4+1;
     char final_path[path_len]={0};
     char final_data[data_len]={0};
-    sprintf(final_path,"%s",(char*)token);
-    tr_info("Writing file in path:%s\n",final_path);
+    sprintf(final_path,"/fs/%s",(char*)token);
+    tr_info("Writing file in path: %s",final_path);
     FILE* f = fopen(final_path, "w");
     if(f!=NULL)
     {
         token=strtok(NULL, "^");
         snprintf(final_data, (data_len-4), "%s", token);            //removing the length of appended path /fs/ length from the data length.
         tr_info("Data is: %s",final_data);
-        if(fprintf(f,"%s\r\n", (const char*)final_data))
+        if(fprintf(f,"%s", (const char*)final_data))
         {
             sprintf(response,"File write completed!");
             fflush(f);
@@ -135,7 +135,6 @@ bool demo_callback_writedata(uint8_t* data, uint16_t data_len, char* response)
     else
     {
         tr_error("Err: %s",strerror(errno));
-        free(final_path);
         return false;
     }
 }

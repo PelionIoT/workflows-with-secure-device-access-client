@@ -14,8 +14,6 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-// Note: this macro is needed on armcc to get the the PRI*32 macros
-// from inttypes.h in a C++ code.
 #include "events/EventQueue.h"
 #include "include/BLEProcess.h"
 #include "include/Comm_interface.h"

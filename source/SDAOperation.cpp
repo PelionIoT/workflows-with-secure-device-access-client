@@ -1,26 +1,24 @@
-/* mbed Microcontroller Library
- * Copyright (c) 2006-2013 ARM Limited
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// ----------------------------------------------------------------------------
+// Copyright 2017-2019 ARM Ltd.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ----------------------------------------------------------------------------
 
 #include "include/SDAOperation.h"
 #include "pv_endian.h"
 #include "cs_hash.h"
 #include "kcm_defs.h"
 #include "SDAHelper.h"
-
-#define TRACE_GROUP_PT "PT"
 
 sda_protocol_error_t SDAOperation::is_token_detected(){
     for(int i = 0; i< FTCD_MSG_HEADER_TOKEN_SIZE_BYTES; i++) {
@@ -55,17 +53,17 @@ sda_protocol_error_t SDAOperation::init(uint8_t* response, size_t response_max_s
     size_t response_actual_size = 0;
     sda_protocol_error_t status = is_token_detected();
     if(status != PT_ERR_OK){
-        mbed_tracef(TRACE_LEVEL_INFO,TRACE_GROUP_PT,"Token not detected");
+        mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP_OP,"Token not detected");
         return status;
     }
     _message_size = read_message_size();
     uint8_t* msg = (uint8_t*)malloc(_message_size);
     if(msg==NULL){
-        mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP_PT,"Can not init message to process SDA");
+        mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP_OP,"Can not init message to process SDA");
         return PT_ERR_MSG;
     }
     if(read_message(msg,_message_size)!=PT_ERR_OK) {
-        mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP_PT, "not able to get message %ld",_message_size);
+        mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP_OP, "not able to get message %ld",_message_size);
         free(msg);
         return PT_ERR_MSG;
     }
@@ -73,13 +71,13 @@ sda_protocol_error_t SDAOperation::init(uint8_t* response, size_t response_max_s
     status = read_message_signature(sig_from_message, sizeof(sig_from_message));
     if(status != PT_ERR_OK) {
         //printf("err reading msg sig");
-        mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP_PT, "err reading message");
+        mbed_tracef(TRACE_LEVEL_ERROR, TRACE_GROUP_OP, "err reading message");
         free(msg);
         return status;
     }
     bool success = process_request_fetch_response(msg, _message_size, response, response_max_size, &response_actual_size);
         if (!success) {
-            mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP_PT,"Failed processing request message");
+            mbed_tracef(TRACE_LEVEL_ERROR,TRACE_GROUP_OP,"Failed processing request message");
             free(msg);
             return  PT_ERR_PROCESS_REQ;
         }
@@ -90,7 +88,7 @@ sda_protocol_error_t SDAOperation::init(uint8_t* response, size_t response_max_s
         kcm_status_e kcm_status = KCM_STATUS_SUCCESS;
         kcm_status = cs_hash(CS_SHA256, msg, _message_size, self_calculated_sig, sizeof(self_calculated_sig));
         if (kcm_status != KCM_STATUS_SUCCESS) {
-            mbed_tracef(TRACE_LEVEL_CMD, TRACE_GROUP_PT, "Failed calculating message signature");
+            mbed_tracef(TRACE_LEVEL_CMD, TRACE_GROUP_OP, "Failed calculating message signature");
             status = PT_ERR_FAILED_TO_CALCULATE_MESSAGE_SIGNATURE;
             free(msg);
             return status;
@@ -98,7 +96,7 @@ sda_protocol_error_t SDAOperation::init(uint8_t* response, size_t response_max_s
 
    // compare signatures
         if (memcmp(self_calculated_sig, sig_from_message, KCM_SHA256_SIZE) != 0) {
-            mbed_tracef(TRACE_LEVEL_CMD, TRACE_GROUP_PT, "Inconsistent message signature");
+            mbed_tracef(TRACE_LEVEL_CMD, TRACE_GROUP_OP, "Inconsistent message signature");
             status = PT_ERR_INCONSISTENT_MESSAGE_SIGNATURE;
             free(msg);
             return status;
