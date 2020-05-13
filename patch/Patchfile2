@@ -1,7 +1,6 @@
-75c75,76
+75c75
 <       WsfMsgFree(pData);
 ---
->      // WsfMsgFree(pData);
->       hciCoreTxAclComplete((hciCoreConn_t *)pContext, pData);
-79d79
-<
+>     	hciCoreTxAclComplete((hciCoreConn_t *)pContext, pData);
+79d78
+< 

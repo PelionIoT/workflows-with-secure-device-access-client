@@ -19,6 +19,8 @@ For Ubuntu-16.04 system, to load the binary, you will need:
 
 ## Build Steps
 
+Please do note that these steps are for Ubuntu-16.04.
+
 * Download and Navigate to this repository.
 * Open up the terminal and run
 
