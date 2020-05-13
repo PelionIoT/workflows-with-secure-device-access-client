@@ -23,7 +23,6 @@
 #include "factory_configurator_client.h"
 #include "key_config_manager.h"
 #include "factory_configurator_client.h"
-#include "mcc_common_setup.h"
 #include "sda_macros.h"
 #include "pal.h"
 #include "key_config_manager.h"
