@@ -6,23 +6,39 @@ This is an example to demonstrate the working of SDA(Secure Device Access client
 
 There are few dependencies to build this project:
 
-* Mbed-CLI - https://github.com/ARMmbed/mbed-cli
-* GCC_ARM Toolchain - https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm
+* [Mbed-CLI](https://os.mbed.com/docs/mbed-os/v5.15/tools/developing-mbed-cli.html)
+* [GCC_ARM Toolchain](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm)
 
-For the Ubuntu system, to load the binary, you will need:
+For installation and setting up the MbedCLI, you can follow this [link](https://os.mbed.com/docs/mbed-os/v5.15/tools/manual-installation.html).
 
-* PyOCD - https://github.com/mbedmicro/pyOCD
-* GNU Debugger for ARM Cortex processors.
+For Ubuntu-16.04 system, to load the binary, you will need:
+
+* [PyOCD](https://pypi.org/project/pyocd/)
+
+* [GNU Debugger](https://packages.debian.org/jessie/gdb-arm-none-eabi) for ARM Cortex processors.
 
 ## Build Steps
 
 * Download and Navigate to this repository.
-* Open up the terminal and run `mbed deploy`. this will download all the necessary files to build this project. These include MbedOS, Mbed-Cloud-Client.
+* Open up the terminal and run
+
+    ```mbed deploy```
+
+    This will download all the necessary files to build this project. These includes MbedOS, Mbed-Cloud-Client and Mbed-Cloud-Client-Platform-Common.
+* Apply the patch by executing
+
+    `./patch.sh`
+
+    Note: you may want to give permission to run it as an executable by typing in the terminal: `chmod +x patch.sh`.
 * To run this code into the developer mode, you will need the security certificate from the portal.Just download and replace `mbed_cloud_dev_credentials.c` from the portal. To do that, steps are written after this segment.
-* You will also need a trust anchor, in the portal, go to Device Identity-> Trust anchor and copy the trust anchor from the portal in PEM Format and run `python create_trust_anchor_dev_cred.py -t "your trust anchor"`
-* Now, you will have to add some configurations for your BLE, Open up the ```ble-config.h``` in root folder of the project and add the configurations like device name, service UUID etc. An example is given at the end of this segment.
+* You will also need a trust anchor, in the portal, go to Device Identity-> Trust anchor and copy the trust anchor from the portal in PEM Format and run 
+
+    ```python create_trust_anchor_dev_cred.py -t "your trust anchor"```
+
+* Now, you will have to add some configurations for your BLE, Open up the `ble-config.h` present in the root folder of the project and add the configurations like Device name, service UUID etc. An example is given in this ReadMe.
 * After this, you are ready to compile. Just run
-`mbed compile -t GCC_ARM -m DISCO-L475VG-IOT01A`
+
+    ```mbed compile -t GCC_ARM -m DISCO-L475VG-IOT01A```
 * Flash the generated binary to your board.
 
 ## Developer Mode
@@ -72,7 +88,40 @@ const uint8_t  CharacteristicUUID[LONG_UUID_LENGTH] = {
 };
 ```
 
-### Side Note:
+## Install the binary into the Board
+
+Please do note that given below steps are for Ubuntu-16.04 only. If you own a Windows or a Mac, you can install the ST Link Utility and flash the firmware.
+
+* Install the latest PyOCD stable release: `pip install -U pyocd`. For more info, you can refer [here](https://pypi.org/project/pyocd/).
+
+* Install [GNU Debugger](https://packages.debian.org/jessie/gdb-arm-none-eabi) by typing:
+
+    ```sudo apt-get install gcc-arm-none-eabi```
+
+* After installation, open up the terminal, type the
+
+    ```pyocd gdbserver```
+
+    and hit enter while keep pressing the reset button of your Disco Board.
+
+* Open up an another terminal in the BUILD directory of the project. In the terminal, type:
+
+    ```arm-none-eabi-gdb```
+
+    This will launch the gdb terminal.
+
+* Now, you will have to connect to the PyOCD Server running in your system. Just type in the gdb terminal:
+
+    ```target remote:3333```.
+
+* Lastly you have to load the binary into the board. Just type
+
+    ```load your_binary.hex```
+
+    The LEDs of the board will start to blink as your binary is loading into the controller. Also, open up Putty or any other terminal, configure the port, (use `mbedls` for the list of ports) for baud-rate:`115200` and open the port. Press the Reset button as soon as the flash complete. The logs will start to appear.
+
+### Side Notes
+
 To change the trace level of logs,
 
 * Open the mbed_app.json present in the root folder of the project, in the option: ` mbed-trace-max-level ` change the value of ` TRACE_LEVEL_ERROR ` to `TRACE_LEVEL_INFO` and compile the project.
