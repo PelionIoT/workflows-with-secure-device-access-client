@@ -9,7 +9,7 @@ There are few dependencies to build this project:
 * [Mbed-CLI](https://os.mbed.com/docs/mbed-os/v5.15/tools/developing-mbed-cli.html)
 * [GCC_ARM Toolchain](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm)
 
-For installation and setting up the MbedCLI, you can follow this [link](https://os.mbed.com/docs/mbed-os/v5.15/tools/manual-installation.html).
+For installation and setting up the MbedCLI, you can follow this [link](https://os.mbed.com/docs/mbed-os/v5.15/tools/manual-installation.html). Also, the version of MbedCLi we used is 1.10.2 .
 
 For Ubuntu-16.04 system, to load the binary, you will need:
 
@@ -31,7 +31,7 @@ For Ubuntu-16.04 system, to load the binary, you will need:
 
     Note: you may want to give permission to run it as an executable by typing in the terminal: `chmod +x patch.sh`.
 * To run this code into the developer mode, you will need the security certificate from the portal.Just download and replace `mbed_cloud_dev_credentials.c` from the portal. To do that, steps are written after this segment.
-* You will also need a trust anchor, in the portal, go to Device Identity-> Trust anchor and copy the trust anchor from the portal in PEM Format and run 
+* You will also need a trust anchor, in the portal, go to Device Identity-> Trust anchor and copy the trust anchor from the portal in PEM Format and run
 
     ```python create_trust_anchor_dev_cred.py -t "your trust anchor"```
 
@@ -102,7 +102,7 @@ Please do note that given below steps are for Ubuntu-16.04 only. If you own a Wi
 
     ```pyocd gdbserver```
 
-    and hit enter while keep pressing the reset button of your Disco Board.
+    and hit enter while keep pressing the reset button of your Board.
 
 * Open up an another terminal in the BUILD directory of the project. In the terminal, type:
 
@@ -118,9 +118,9 @@ Please do note that given below steps are for Ubuntu-16.04 only. If you own a Wi
 
     ```load your_binary.hex```
 
-    The LEDs of the board will start to blink as your binary is loading into the controller. Also, open up Putty or any other terminal, configure the port, (use `mbedls` for the list of ports) for baud-rate:`115200` and open the port. Press the Reset button as soon as the flash complete. The logs will start to appear.
+    The LEDs of the board will start to blink as your binary is loading into the controller. Also, open up Putty or any other terminal, configure the port (use `mbedls` for the list of ports),the baud-rate should be `115200` and open the port. Press the Reset button as soon as the flash complete. The logs will start to appear. Your program is flashed.
 
-### Side Notes
+### Side Note
 
 To change the trace level of logs,
 
