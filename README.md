@@ -27,11 +27,10 @@ Please do note that these steps are for Ubuntu-16.04.
     ```mbed deploy```
 
     This will download all the necessary files to build this project. These includes MbedOS, Mbed-Cloud-Client and Mbed-Cloud-Client-Platform-Common.
-* Apply the patch by executing
+* copy the patch file present in patch folder of the project and paste it inside mbed-os. Open up the terminal inside Mbed-OS and apply the patch by command 
 
-    `./patch.sh`
+    ```git am 0001-ble-fix.patch```
 
-    Note: you may want to give permission to run it as an executable by typing in the terminal: `chmod +x patch.sh`.
 * To run this code into the developer mode, you will need the security certificate from the portal.Just download and replace `mbed_cloud_dev_credentials.c` from the portal. To do that, steps are written after this segment.
 * You will also need a trust anchor, in the portal, go to Device Identity-> Trust anchor and copy the trust anchor from the portal in PEM Format and run
 
