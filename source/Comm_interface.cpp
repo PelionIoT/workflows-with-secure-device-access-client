@@ -20,21 +20,21 @@
 
 bool Comm_interface::init(char* endpoint)
 {
-    BLE &ble_interface = BLE::Instance();
-    _bleprocess = new BLEProcess(_event_queue, ble_interface, endpoint);
-    if(!_bleprocess)
-    {
-        return false;
-    }
-    _bleprocess->on_init(NULL);
-    return true;
+	BLE &ble_interface = BLE::Instance();
+	_bleprocess = new BLEProcess(_event_queue, ble_interface, endpoint);
+	if(!_bleprocess)
+	{
+		return false;
+	}
+	_bleprocess->on_init(NULL);
+	return true;
 }
 bool Comm_interface::start()
 {
-    bool status = _bleprocess->start();
-    if(status)
-    {
-    _event_queue.dispatch_forever();
-    }
-    return status;
+	bool status = _bleprocess->start();
+	if(status)
+	{
+		event_queue.dispatch_forever();
+	}
+	return status;
 }

@@ -28,16 +28,16 @@
 typedef struct _Frag_buff {
 	uint8_t seq_num;        // global seq number that contains the packet number
 	uint8_t type:2;         // type- control frame or data frame
-    uint8_t more_frag:1;    // More fragment bit- it tells if there are more packets or not. if set- then there are more.
+	uint8_t more_frag:1;    // More fragment bit- it tells if there are more packets or not. if set- then there are more.
 	uint8_t frag_num:3;     // Fragment Number
-    uint8_t frag_length;    // Legth of fragment
-    uint16_t length;        // total length
-    uint8_t resv1:2;        // reserve
+	uint8_t frag_length;    // Legth of fragment
+	uint16_t length;        // total length
+	uint8_t resv1:2;        // reserve
 	uint8_t resv2;
-    uint8_t resv3;
-    uint16_t resv4;
+	uint8_t resv3;
+	uint16_t resv4;
 	/* Payload */
-    uint8_t* payload;       // payload, contains the data.
+	uint8_t* payload;       // payload, contains the data.
 }__attribute__((packed)) Frag_buff;
 // returns the buffer without the payload.
 Frag_buff get_buff(uint8_t seq_num, uint8_t type, uint8_t more_frag, uint8_t frag_num, uint8_t frag_length, uint16_t length);

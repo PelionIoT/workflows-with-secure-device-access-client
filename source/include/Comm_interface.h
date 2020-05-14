@@ -21,13 +21,13 @@
 #include "BLEProcess.h"
 
 class Comm_interface{
-    public:
-        Comm_interface(){
-        };
-        bool init(char* endpoint);
-        bool start();
-    private:
-        events::EventQueue _event_queue;
-        BLEProcess* _bleprocess;
+	public:
+		Comm_interface(){
+		};
+		bool init(char* endpoint);
+		bool start();
+	private:
+		events::EventQueue _event_queue;
+		BLEProcess* _bleprocess;
 };
 #endif
