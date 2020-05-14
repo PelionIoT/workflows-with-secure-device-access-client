@@ -1,0 +1,51 @@
+From d77802034b721fff7d006e0fbdca4f634d39bc53 Mon Sep 17 00:00:00 2001
+From: prakharbhatt007 <prkhrbhtt@gmail.com>
+Date: Thu, 14 May 2020 15:35:33 +0530
+Subject: [PATCH] ble fix
+
+---
+ .../targets/TARGET_CORDIO/driver/CordioHCIDriver.cpp           | 10 +++++-----
+ .../targets/TARGET_CORDIO/stack_adaptation/hci_tr.c            |  2 +-
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/features/FEATURE_BLE/targets/TARGET_CORDIO/driver/CordioHCIDriver.cpp b/features/FEATURE_BLE/targets/TARGET_CORDIO/driver/CordioHCIDriver.cpp
+index d166424..d6916fc 100644
+--- a/features/FEATURE_BLE/targets/TARGET_CORDIO/driver/CordioHCIDriver.cpp
++++ b/features/FEATURE_BLE/targets/TARGET_CORDIO/driver/CordioHCIDriver.cpp
+@@ -82,15 +82,15 @@ void CordioHCIDriver::terminate()
+ buf_pool_desc_t CordioHCIDriver::get_default_buffer_pool_description()
+ {
+     static union {
+-        uint8_t buffer[2250];
++        uint8_t buffer[4250];
+         uint64_t align;
+     };
+     static const wsfBufPoolDesc_t pool_desc[] = {
+         {  16, 16 },
+-        {  32, 16 },
+-        {  64, 8 },
+-        { 128, 4 },
+-        { 272, 1 }
++        {  32, 10 },
++        {  64, 6 },
++        { 128, 10 },
++        { 272, 5 }
+     };
+ 
+     return buf_pool_desc_t(buffer, pool_desc);
+diff --git a/features/FEATURE_BLE/targets/TARGET_CORDIO/stack_adaptation/hci_tr.c b/features/FEATURE_BLE/targets/TARGET_CORDIO/stack_adaptation/hci_tr.c
+index 3e97527..8bf33a4 100644
+--- a/features/FEATURE_BLE/targets/TARGET_CORDIO/stack_adaptation/hci_tr.c
++++ b/features/FEATURE_BLE/targets/TARGET_CORDIO/stack_adaptation/hci_tr.c
+@@ -72,7 +72,7 @@ void hciTrSendAclData(void *pContext, uint8_t *pData)
+       /* pData is not freed as the hciDrvWrite took ownership of the WSF buffer */
+ #else
+       /* free buffer */
+-      WsfMsgFree(pData);
++      hciCoreTxAclComplete((hciCoreConn_t *)pContext, pData);
+ #endif // CORDIO_ZERO_COPY_HCI
+   }
+ }
+-- 
+2.7.4
+
