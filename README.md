@@ -15,7 +15,7 @@ For Ubuntu-16.04 system, to load the binary, you will need:
 
 * [PyOCD](https://pypi.org/project/pyocd/)
 
-* [GNU Debugger](https://packages.debian.org/jessie/gdb-arm-none-eabi) for ARM Cortex processors.
+* GNU Debugger comes with the [GCC_ARM Toolchain](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm).
 
 ## Build Steps
 
@@ -27,7 +27,7 @@ Please do note that these steps are for Ubuntu-16.04.
     ```mbed deploy```
 
     This will download all the necessary files to build this project. These includes MbedOS, Mbed-Cloud-Client and Mbed-Cloud-Client-Platform-Common.
-* copy the patch file present in patch folder of the project and paste it inside mbed-os. Open up the terminal inside Mbed-OS and apply the patch by command 
+* copy the patch file present in patch folder of the project and paste it inside mbed-os. Open up the terminal inside Mbed-OS and apply the patch by command:
 
     ```git am 0001-ble-fix.patch```
 
@@ -95,19 +95,15 @@ Please do note that given below steps are for Ubuntu-16.04 only. If you own a Wi
 
 * Install the latest PyOCD stable release: `pip install -U pyocd`. For more info, you can refer [here](https://pypi.org/project/pyocd/).
 
-* Install [GNU Debugger](https://packages.debian.org/jessie/gdb-arm-none-eabi) by typing:
-
-    ```sudo apt-get install gcc-arm-none-eabi```
-
-* After installation, open up the terminal, type the
+* Open up the terminal, type the
 
     ```pyocd gdbserver```
 
     and hit enter while keep pressing the reset button of your Board.
 
-* Open up an another terminal in the BUILD directory of the project. In the terminal, type:
+* Open up an another terminal in the BUILD directory of the project. In the terminal, just run the binary of gdb present in bin folder of the GCC_ARM toolchain you downloaded:
 
-    ```arm-none-eabi-gdb```
+    ```[toolchain-location]/bin/arm-none-eabi-gdb```
 
     This will launch the gdb terminal.
 
