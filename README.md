@@ -39,7 +39,7 @@ Please do note that these steps are for Ubuntu-16.04.
 * Now, you will have to add some configurations for your BLE, Open up the `ble-config.h` present in the root folder of the project and add the configurations like Device name, service UUID etc. An example is given in this ReadMe.
 * After this, you are ready to compile. Just run
 
-    ```mbed compile -t GCC_ARM -m DISCO-L475VG-IOT01A```
+    ```mbed compile -t GCC_ARM -m DISCO_L475VG_IOT01A```
 * Flash the generated binary to your board.
 
 ## Developer Mode
