@@ -25,7 +25,7 @@
 #define BLE_PACKET_SIZE             0
 
 /***
-For Device Informaiton Service in BLE
+For Device Information Service in BLE
  * Device Local Name to advertise in BLE
  * Manufacturer Name
  * Model Number
@@ -40,13 +40,13 @@ For Device Informaiton Service in BLE
 #define FIRMWARE_REVISION
 #define SOFTWARE_REVISION
 
-const uint8_t  ServiceBaseUUID[LONG_UUID_LENGTH] = {0};
-const uint16_t ServiceShortUUID                 = 0x0000;
-const uint16_t CharacteristicShortUUID          = 0x0000;
-const uint8_t  ServiceUUID[LONG_UUID_LENGTH] = {0};
+const uint8_t  ServiceBaseUUID[LONG_UUID_LENGTH]    = {0};
+const uint16_t ServiceShortUUID                     = 0x0000;
+const uint16_t CharacteristicShortUUID              = 0x0000;
+const uint8_t  ServiceUUID[LONG_UUID_LENGTH]        = {0};
 const uint8_t  CharacteristicUUID[LONG_UUID_LENGTH] = {0};
 
 #if BLE_PACKET_SIZE == 0
-    #error "Fill the configurations with the details like UUID, Name, BLE_PACKET_Size etc!"
+    #error "Fill the configurations with the details like UUID, Name, BLE_PACKET_SIZE etc!"
 #endif
 #endif
