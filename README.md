@@ -21,6 +21,7 @@ It enables a Bluetooth Low Energy (BLE) communication interface with PDA and int
 These will be installed when you run `mbed deploy` command as instructed in the Build Steps section of this doc.
 
 ### Tools and toolchains
+- [Install Python 2.7](https://www.python.org/download/releases/2.7/)
 - [Install Mbed CLI](https://os.mbed.com/docs/mbed-os/v5.15/quick-start/offline-with-mbed-cli.html)
 - [GNU Arm GCC Compiler](https://www.pelion.com/docs/device-management/current/cloud-requirements/tool-requirements.html#notes-for-toolchains).
 - [pyOCD](https://pypi.org/project/pyocd/)
