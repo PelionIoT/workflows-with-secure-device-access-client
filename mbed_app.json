@@ -1,31 +1,81 @@
 {
+    "macros": [
+        "MBED_CLIENT_USER_CONFIG_FILE=\"mbed_cloud_client_user_config.h\"",
+        "MBED_CLOUD_CLIENT_USER_CONFIG_FILE=\"mbed_cloud_client_user_config.h\"",
+        "MBED_CLOUD_CLIENT_ENABLE_SDA=1"
+    ],
     "target_overrides": {
         "*": {
-            "platform.stdio-buffered-serial": true,
-            "platform.stdio-baud-rate": 115200,
-            "platform.stdio-convert-newlines": true,
-            "target.features_add": [ "STORAGE" ],
-            "mbed-trace.enable": null,
-            "target.OUTPUT_EXT": "bin"
-
+            "platform.stdio-buffered-serial"             : true,
+            "platform.stdio-baud-rate"                   : 115200,
+            "platform.stdio-convert-newlines"            : true,
+            "target.features_add"                        : ["BOOTLOADER","STORAGE" ],
+            "mbed-trace.enable"                          : 1,
+            "mbed-cloud-client.external-sst-support"     : 1,
+            "target.OUTPUT_EXT"                          :"hex"
         },
         "K64F": {
-            "target.features_add": ["BLE"],
-            "target.extra_labels_add": ["CORDIO", "CORDIO_BLUENRG"]
-        },
-        "NUCLEO_F401RE": {
-            "target.features_add": ["BLE"],
-            "target.extra_labels_add": ["CORDIO", "CORDIO_BLUENRG"]
+            "lwip.tcpip-thread-stacksize"                : 2400,
+            "target.bootloader_img"                      : "tools/mbed-bootloader-k64f-block_device-kvstore-v4.1.0.bin",
+            "target.header_offset"                       : "0xa000",
+            "target.app_offset"                          : "0xa400",
+            "storage.storage_type"                       : "FILESYSTEM",
+            "storage_filesystem.filesystem"              : "LITTLE",
+            "storage_filesystem.blockdevice"             : "SD",
+            "storage_filesystem.internal_base_address"   : "(32*1024)",
+            "storage_filesystem.rbp_internal_size"       : "(8*1024)",
+            "storage_filesystem.external_base_address"   : "0x0",
+            "storage_filesystem.external_size"           : "(1024*1024*64)",
+            "update-client.bootloader-details"           : "0x00007188",
+            "update-client.application-details"          : "(40*1024)",
+            "mbedtls-user-config-file"                   : "\"mbedTLSConfig_mbedOS.h\"",
+            "pal-user-defined-config"                    : "\"pal_config_MbedOS.h\""
         },
         "DISCO_L475VG_IOT01A": {
-            "target.features_add": ["BLE"],
-            "target.extra_labels_add": ["CORDIO", "CORDIO_BLUENRG"]
+            "target.bootloader_img"                      : "tools/mbed-bootloader-disco_l475vg_iot01a-internal_qspif-kvstore-v4.1.0.bin",
+            "target.features_add"                        :["BLE"],
+            "target.extra_labels_add"                    :["CORDIO", "CORDIO_BLUENRG"],
+            "target.header_offset"                       : "0x11000",
+            "target.app_offset"                          : "0x11400",
+            "target.components_add"                      : ["QSPIF"],
+            "bootloader-size"                            : "(36*1024)",
+            "storage.storage_type"                       : "TDB_INTERNAL",
+            "storage_tdb_internal.internal_base_address" : "(MBED_ROM_START + MBED_BOOTLOADER_SIZE)",
+            "storage_tdb_internal.internal_size"         : "(2*16*1024)",
+            "mbedtls-user-config-file"                   : "\"mbedTLSConfig_mbedOS.h\"",
+            "pal-user-defined-config"                    : "\"pal_config_MbedOS.h\"",
+            "cordio.desired-att-mtu"                     : "244",
+            "cordio.rx-acl-buffer-size"                  : "244"
+        }
+    },
+    "config": {
+        "developer-mode"           : {
+            "help"                 : "Enable Developer mode to skip Factory enrollment",
+            "options"              : [null, 1],
+            "value"                : 1
         },
-        "NRF52840_DK": {
-            "target.features_add": ["BLE"]
+        "main-stack-size"          : {
+            "value"                : 8192
         },
-        "NRF52_DK": {
-            "target.features_add": ["BLE"]
+        "mbedtls-user-config-file" : {
+            "help"                 : "Mbetls user configuration file",
+            "macro_name"           : "MBEDTLS_USER_CONFIG_FILE",
+            "value"                : null
+        },
+        "pal-user-defined-config"  : {
+            "help"                 : "PAL user configuration file",
+            "macro_name"           : "PAL_USER_DEFINED_CONFIGURATION",
+            "value"                : null
+        },
+        "mbed-trace-max-level"     : {
+            "help"                 : "Max trace level. Must be one of the following: [TRACE_LEVEL_DEBUG, TRACE_LEVEL_INFO, TRACE_LEVEL_WARN, TRACE_LEVEL_ERROR, TRACE_LEVEL_CMD]",
+            "macro_name"           : "MBED_TRACE_MAX_LEVEL",
+            "value"                : "TRACE_LEVEL_ERROR"
+        },
+        "bootloader-size": {
+            "help"      : "Helper macro to enable calculation of rom regions. target.header_offset and target.app_offset still needs to be calculated manually, though.",
+            "value"     : "(32*1024)",
+            "macro_name": "MBED_BOOTLOADER_SIZE"
         }
     }
 }
