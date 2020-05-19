@@ -1,17 +1,23 @@
-From 95a315b024970159ad314552bb8635bcdd113231 Mon Sep 17 00:00:00 2001
+From 34cdc732282f45e17042437d68e1ea822783355f Mon Sep 17 00:00:00 2001
 From: prakharbhatt007 <prkhrbhtt@gmail.com>
-Date: Tue, 19 May 2020 20:25:22 +0530
-Subject: [PATCH] 00003-CordioHCIDriver-patch
+Date: Tue, 19 May 2020 22:01:14 +0530
+Subject: [PATCH] 0003-Update-CordioHCIDriver
 
 ---
- .../FEATURE_BLE/targets/TARGET_CORDIO/driver/CordioHCIDriver.cpp  | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ .../targets/TARGET_CORDIO/driver/CordioHCIDriver.cpp           | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/features/FEATURE_BLE/targets/TARGET_CORDIO/driver/CordioHCIDriver.cpp b/features/FEATURE_BLE/targets/TARGET_CORDIO/driver/CordioHCIDriver.cpp
-index d166424..120725b 100644
+index d166424..d6916fc 100644
 --- a/features/FEATURE_BLE/targets/TARGET_CORDIO/driver/CordioHCIDriver.cpp
 +++ b/features/FEATURE_BLE/targets/TARGET_CORDIO/driver/CordioHCIDriver.cpp
-@@ -87,10 +87,10 @@ buf_pool_desc_t CordioHCIDriver::get_default_buffer_pool_description()
+@@ -82,15 +82,15 @@ void CordioHCIDriver::terminate()
+ buf_pool_desc_t CordioHCIDriver::get_default_buffer_pool_description()
+ {
+     static union {
+-        uint8_t buffer[2250];
++        uint8_t buffer[4250];
+         uint64_t align;
      };
      static const wsfBufPoolDesc_t pool_desc[] = {
          {  16, 16 },
