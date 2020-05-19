@@ -1,0 +1,26 @@
+From 4ea64cb6c60e3ec12e94b2caa9e571abf798c3bf Mon Sep 17 00:00:00 2001
+From: Vishal Bhargava <vishal.bhargava@arm.com>
+Date: Tue, 17 Mar 2020 12:13:07 +0530
+Subject: [PATCH 2/2] Update hci_tr.c
+
+Indent formating
+---
+ .../FEATURE_BLE/targets/TARGET_CORDIO/stack_adaptation/hci_tr.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/features/FEATURE_BLE/targets/TARGET_CORDIO/stack_adaptation/hci_tr.c b/features/FEATURE_BLE/targets/TARGET_CORDIO/stack_adaptation/hci_tr.c
+index 3a24a982c4..8bf33a4d48 100644
+--- a/features/FEATURE_BLE/targets/TARGET_CORDIO/stack_adaptation/hci_tr.c
++++ b/features/FEATURE_BLE/targets/TARGET_CORDIO/stack_adaptation/hci_tr.c
+@@ -72,7 +72,7 @@ void hciTrSendAclData(void *pContext, uint8_t *pData)
+       /* pData is not freed as the hciDrvWrite took ownership of the WSF buffer */
+ #else
+       /* free buffer */
+-     hciCoreTxAclComplete((hciCoreConn_t *)pContext, pData);
++      hciCoreTxAclComplete((hciCoreConn_t *)pContext, pData);
+ #endif // CORDIO_ZERO_COPY_HCI
+   }
+ }
+-- 
+2.17.1
+
