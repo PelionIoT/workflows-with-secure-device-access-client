@@ -120,7 +120,7 @@ mbed config -G GCC_ARM_PATH "~/<gcc-arm-none-eabi-6-xxx>/bin"
 
 * Load the binary onto your board, run
     ```
-    load workflows-with-secure-device-access-client_application.hex
+    load workflows-with-secure-device-access-client.hex
     ```
     The LED blinks rapidly, wait for it to finish.
 
@@ -131,7 +131,6 @@ mbed config -G GCC_ARM_PATH "~/<gcc-arm-none-eabi-6-xxx>/bin"
 - Use PuTTY or any other serial console with configuration 115200 baud 8-n-1 to view the logs.
 
 Note: To change the trace level of logs, open the `mbed_app.json` present in the root folder of the project, in the option: ` mbed-trace-max-level ` change the value of `TRACE_LEVEL_ERROR` to `TRACE_LEVEL_INFO`. Compile the project and flash the new binary.
-
 
 ## Troubleshooting
 
