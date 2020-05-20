@@ -146,7 +146,7 @@ mbed config -G GCC_ARM_PATH "~/<gcc-arm-none-eabi-6-xxx>/bin"
 1. Use `mbedls` to detect and list Mbed Enabled devices connected to the computer.
 1. Use PuTTY or any other serial console with 115200 baud 8-N-1 configuration to view the logs.
 
-Note: To change the trace level of logs, open the `mbed_app.json` file in the root folder of the project. Under ` mbed-trace-max-level `, change the value of `TRACE_LEVEL_ERROR` to `TRACE_LEVEL_INFO`. Compile the project and flash the new binary.
+Note: To change the trace level of logs, open the `mbed_app.json` file in the root folder of the project and change the value of `MBED_TRACE_MAX_LEVEL` from `TRACE_LEVEL_ERROR` to `TRACE_LEVEL_INFO`. Compile the project and flash the new binary.
 
 ## Troubleshooting
 
