@@ -75,7 +75,7 @@ mbed config -G GCC_ARM_PATH "~/<gcc-arm-none-eabi-6-xxx>/bin"
     git am ../patches/*
     ```
 
-1. Configure the BLE interface by providing the values to the parameters defined in `ble-config.h`.
+1. Configure the BLE interface by setting values for the parameters defined in `ble-config.h`.
 
     Note: `BLE_PACKET_SIZE` should be 12 to 232 bytes. We recommend you use a large packet size to reduce the number of BLE packets, increase throughput and reduce power consumption.
 
