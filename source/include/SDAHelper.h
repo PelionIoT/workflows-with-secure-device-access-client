@@ -34,8 +34,8 @@
 #include "sda_status.h"
 #include "secure_device_access.h"
 
-#define ResponseBufferLength 2000
-#define PathLength 60
+#define ResponseBufferLength 	1300
+#define PathLength 				60
 #define TRACE_GROUP "sdah"
 
 bool factory_setup(void);
