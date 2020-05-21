@@ -86,30 +86,30 @@ static void emulate_operation(const char* operation_name, uint32_t color,
 	set_led_color(prev_color);
 }
 
-void demo_setup(void) { set_led_color(LED_CL_GREEN); }
+void demo_setup(void) { 
+	set_led_color(LED_CL_GREEN); 
+}
 
 void display_faulty_message(const char* fault_message) {
 	tr_error("error message: %s", fault_message);
 	emulate_operation(NULL, LED_CL_RED, 10);
 }
 
-// path+content
 bool demo_callback_writedata(uint8_t* data, uint16_t data_len, char* response) {
 	char* token = strtok((char*)data, SEPERATOR);
 	uint8_t path_len = strlen(token) + 4 + 1;
 	char final_path[path_len] = {0};
-	char final_data[data_len] = {0};
 	sprintf(final_path, "/fs/%s", (char*)token);
-	tr_info("Writing file in path: %s", final_path);
+	tr_info("Writing file in path: %s and data bytes:%d", final_path, data_len);
 	FILE* f = fopen(final_path, "w");
 	if (f != NULL) {
 		token = strtok(NULL, "^");
-		snprintf(final_data, (data_len - 4), "%s",
-				 token);  // removing the length of appended path /fs/ length
-						  // from the data length.
-		tr_info("Data is: %s", final_data);
-		if (fprintf(f, "%s", (const char*)final_data)) {
+		tr_info("Data is: %s", token);
+		int filebytes = fprintf(f, "%s", token);
+		tr_info("File Bytes in buffer:%d",filebytes);
+		if (filebytes) {
 			sprintf(response, "File write completed!");
+			tr_info("File write completed!");
 			fflush(f);
 			fclose(f);
 			return true;
@@ -126,7 +126,7 @@ bool demo_callback_writedata(uint8_t* data, uint16_t data_len, char* response) {
 }
 // response pointer should be allocated before calling this function
 bool demo_callback_read_data(uint8_t* path, uint8_t path_size, char* response) {
-	uint8_t path_len = path_size + 4 + 1;  // because we have to add /fs/ to the front of the file name
+	uint8_t path_len = path_size + 5;
 	char final_path[path_len] = {0};
 	snprintf(final_path, path_len, "/fs/%s", (char*)path);
 	tr_info("Reading data from file-path:%s", final_path);
@@ -137,8 +137,8 @@ bool demo_callback_read_data(uint8_t* path, uint8_t path_size, char* response) {
 		return false;
 	}
 	tr_info("File read starting");
-	fscanf(r, "%[^\0]", response);  // reading file till NULL. That means
-									// reading the entire file in a string.
+	fscanf(r, "%[^NULL]", response);	// reading file till NULL. That means
+										// reading the entire file in a string.
 	fclose(r);
 	tr_info("Data is: %s", response);
 	tr_info("File read complete");
