@@ -30,9 +30,7 @@
 using namespace mbed;
 #define TRACE_GROUP "blep"
 
-void BLEProcess::on_init(mbed::Callback<void(BLE &, events::EventQueue &)> cb) {
-	_post_init_cb = cb;
-}
+void BLEProcess::on_init(mbed::Callback<void(BLE &, events::EventQueue &)> cb) { _post_init_cb = cb; }
 
 /**
  * Initialize the ble interface, configure it and start advertising.
@@ -41,18 +39,16 @@ bool BLEProcess::start() {
 	tr_info("Ble process started.");
 
 	if (_ble_interface.hasInitialized()) {
-		tr_error("Error: the ble instance has already been initialized.");
-		return false;
+	tr_error("Error: the ble instance has already been initialized.");
+	return false;
 	}
-	_ble_interface.onEventsToProcess(
-		makeFunctionPointer(this, &BLEProcess::schedule_ble_events));
+	_ble_interface.onEventsToProcess(makeFunctionPointer(this, &BLEProcess::schedule_ble_events));
 
-	ble_error_t error =
-		_ble_interface.init(this, &BLEProcess::when_init_complete);
+	ble_error_t error = _ble_interface.init(this, &BLEProcess::when_init_complete);
 
 	if (error) {
-		tr_error("Error: %u returned by BLE::init.", error);
-		return false;
+	tr_error("Error: %u returned by BLE::init.", error);
+	return false;
 	}
 	return true;
 }
@@ -62,16 +58,15 @@ bool BLEProcess::start() {
  */
 void BLEProcess::stop() {
 	if (_ble_interface.hasInitialized()) {
-		_ble_interface.shutdown();
-		tr_info("Ble process stopped.");
+	_ble_interface.shutdown();
+	tr_info("Ble process stopped.");
 	}
 }
 
 /**
  * Schedule processing of events from the BLE middleware in the event queue.
  */
-void BLEProcess::schedule_ble_events(
-	BLE::OnEventsToProcessCallbackContext *event) {
+void BLEProcess::schedule_ble_events(BLE::OnEventsToProcessCallbackContext *event) {
 	_event_queue.call(mbed::callback(&event->ble, &BLE::processEvents));
 }
 
@@ -80,11 +75,10 @@ void BLEProcess::schedule_ble_events(
  *
  * This function is invoked when the ble interface is initialized.
  */
-void BLEProcess::when_init_complete(
-	BLE::InitializationCompleteCallbackContext *event) {
+void BLEProcess::when_init_complete(BLE::InitializationCompleteCallbackContext *event) {
 	if (event->error) {
-		tr_error("Error %u during the initialization\r\n", event->error);
-		return;
+	tr_error("Error %u during the initialization\r\n", event->error);
+	return;
 	}
 	tr_info("Ble instance initialized");
 
@@ -92,34 +86,29 @@ void BLEProcess::when_init_complete(
 	gap.onConnection(this, &BLEProcess::when_connection);
 	gap.onDisconnection(this, &BLEProcess::when_disconnection);
 	blesda = new BLESDA(_event_queue, _ble_interface, _endpoint);
-	DeviceInformationService deviceInfo(
-		_ble_interface, MANUFACTURER_NAME, MODEL_NUM, (const char *)_endpoint,
-		HARDWARE_REVISION, FIRMWARE_REVISION, SOFTWARE_REVISION);
+	DeviceInformationService deviceInfo(_ble_interface, MANUFACTURER_NAME, MODEL_NUM, (const char *)_endpoint,
+										HARDWARE_REVISION, FIRMWARE_REVISION, SOFTWARE_REVISION);
 
 	if (!set_advertising_parameters()) {
-		return;
+	return;
 	}
 
 	if (!set_advertising_data()) {
-		return;
+	return;
 	}
 
 	if (!start_advertising()) {
-		return;
+	return;
 	}
 
 	if (_post_init_cb) {
-		_post_init_cb(_ble_interface, _event_queue);
+	_post_init_cb(_ble_interface, _event_queue);
 	}
 }
 
-void BLEProcess::when_connection(
-	const Gap::ConnectionCallbackParams_t *connection_event) {
-	tr_info("Connected.");
-}
+void BLEProcess::when_connection(const Gap::ConnectionCallbackParams_t *connection_event) { tr_info("Connected."); }
 
-void BLEProcess::when_disconnection(
-	const Gap::DisconnectionCallbackParams_t *event) {
+void BLEProcess::when_disconnection(const Gap::DisconnectionCallbackParams_t *event) {
 	tr_info("Disconnected.");
 	start_advertising();
 }
@@ -131,21 +120,20 @@ bool BLEProcess::start_advertising(void) {
 	ble_error_t error = gap.startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
 
 	if (error) {
-		tr_error("Error %u during gap.startAdvertising.\r\n", error);
-		return false;
+	tr_error("Error %u during gap.startAdvertising.\r\n", error);
+	return false;
 	} else {
-		tr_info("Advertising started.");
-		return true;
+	tr_info("Advertising started.");
+	return true;
 	}
 }
 
 bool BLEProcess::set_advertising_parameters() {
 	Gap &gap = _ble_interface.gap();
-	ble_error_t error = gap.setAdvertisingParameters(
-		ble::LEGACY_ADVERTISING_HANDLE, ble::AdvertisingParameters());
+	ble_error_t error = gap.setAdvertisingParameters(ble::LEGACY_ADVERTISING_HANDLE, ble::AdvertisingParameters());
 	if (error) {
-		tr_error("Gap::setAdvertisingParameters() failed with error %d", error);
-		return false;
+	tr_error("Gap::setAdvertisingParameters() failed with error %d", error);
+	return false;
 	}
 	return true;
 }
@@ -154,17 +142,16 @@ bool BLEProcess::set_advertising_data() {
 	Gap &gap = _ble_interface.gap();
 	/*	Use the simple builder to construct the payload; it fails at runtime
 	* 	if there is not enough space left in the buffer */
-	ble_error_t error = gap.setAdvertisingPayload(
-		ble::LEGACY_ADVERTISING_HANDLE,
-		ble::AdvertisingDataSimpleBuilder<ble::LEGACY_ADVERTISING_MAX_SIZE>()
-			.setFlags()
-			.setName(Device_Local_Name)
-			.setLocalService(blesda->getUUID())
-			.getAdvertisingData());
+	ble_error_t error = gap.setAdvertisingPayload(ble::LEGACY_ADVERTISING_HANDLE,
+												ble::AdvertisingDataSimpleBuilder<ble::LEGACY_ADVERTISING_MAX_SIZE>()
+													.setFlags()
+													.setName(Device_Local_Name)
+													.setLocalService(blesda->getUUID())
+													.getAdvertisingData());
 
 	if (error) {
-		tr_error("Gap::setAdvertisingPayload() failed with error %d", error);
-		return false;
+	tr_error("Gap::setAdvertisingPayload() failed with error %d", error);
+	return false;
 	}
 
 	return true;

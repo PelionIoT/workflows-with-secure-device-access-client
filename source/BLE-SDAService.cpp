@@ -52,7 +52,7 @@ void BLESDA::send_next_buff() {
 		transmit_data_len = (queue_len - msg_index);
 	}
 	uint8_t* txqueue = (uint8_t*)malloc(transmit_data_len*sizeof(uint8_t));
-	if(!txqueue){
+	if(!txqueue) {
 		tr_error("Not able to allocate Tx memory..aborting");
 	}
 	memset(txqueue,0,transmit_data_len);
