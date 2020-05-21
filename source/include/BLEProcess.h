@@ -89,7 +89,7 @@ class BLEProcess : private mbed::NonCopyable<BLEProcess> {
 	events::EventQueue &_event_queue;
 	BLE &_ble_interface;
 	char *_endpoint;
-	BLESDA *blesda;
+	BLESDA *blesda = NULL;
 	mbed::Callback<void(BLE &, events::EventQueue &)> _post_init_cb;
 };
 #endif /* GATT_SERVER_EXAMPLE_BLE_PROCESS_H_ */

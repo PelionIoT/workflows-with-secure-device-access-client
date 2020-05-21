@@ -36,7 +36,7 @@
 
 #define ResponseBufferLength 	1536
 #define PathLength 				60
-#define TRACE_GROUP "sdah"
+#define TRACE_GROUP 			"sdah"
 
 bool factory_setup(void);
 sda_status_e is_operation_permitted(sda_operation_ctx_h operation_context,

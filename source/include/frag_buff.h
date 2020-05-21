@@ -31,9 +31,9 @@ typedef struct _Frag_buff {
 	uint8_t more_frag : 1;  // More fragment bit- it tells if there are more
 							// packets or not. if set- then there are more.
 	uint8_t frag_num : 3;   // Fragment Number
+	uint8_t resv1 : 2;		// reserve
 	uint8_t frag_length;	// Legth of fragment
 	uint16_t length;		// total length
-	uint8_t resv1 : 2;		// reserve
 	uint8_t resv2;
 	uint8_t resv3;
 	uint16_t resv4;
