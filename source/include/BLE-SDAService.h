@@ -60,16 +60,20 @@ class BLESDA {
 							   sizeof(charTable) / sizeof(GattCharacteristic*));
 		ble.gattServer().addService(SDAService);
 		ble.gattServer().onDataWritten(this, &BLESDA::onDataWritten);
+		ble.gattServer().onDataSent(this,&BLESDA::onDataSent);
 	}
 
 	uint16_t getCharacteristicHandle();
 
-	const uint8_t* getUUID() { return ServiceUUID; }
+	const uint8_t* getUUID() { 
+		return ServiceUUID; 
+		}
 
 	sda_protocol_error_t BLETX(Frag_buff* header, uint8_t len);
 	size_t write(uint8_t* _buffer, uint8_t length);
 	uint8_t* getRecievedBuffer();
 	void onDataWritten(const GattWriteCallbackParams* params);
+	void onDataSent(unsigned count);
 	sda_protocol_error_t ProcessBuffer(Frag_buff* frag_sda);
 	sda_protocol_error_t sda_fragment_datagram(uint8_t* sda_payload,
 											   uint16_t payloadsize,
@@ -81,10 +85,16 @@ class BLESDA {
    private:
 	void delay();
 	char* getEndpoint();
+	void send_next_buff();
 	events::EventQueue& _event_queue;
 	BLE& ble;
 	const char* _endpointBuffer;
+	uint16_t queue_len = 0;
+	uint16_t msg_index = 0;
+	uint8_t num_buff = 0;
 	uint8_t* msg_to_sda = NULL;
+	uint8_t	msg_queue[response_size]={0};
+
 	GattCharacteristic sdaCharacteristic;
 };
 #endif
