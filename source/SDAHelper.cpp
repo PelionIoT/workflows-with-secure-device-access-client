@@ -100,7 +100,7 @@ sda_status_e application_callback(sda_operation_ctx_h handle,
 	bool success = false;  // assume error
 
 	SDA_UNUSED_PARAM(callback_param);
-	char response[ResponseBufferLength] = {};
+	char response[ResponseBufferLength] = {0};
 	sda_status = sda_command_type_get(handle, &command_type);
 	if (sda_status != SDA_STATUS_SUCCESS) {
 		tr_error("Secure-Device-Access failed getting command type (%u)",
