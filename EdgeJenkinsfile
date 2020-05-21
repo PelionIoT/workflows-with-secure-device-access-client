@@ -1,4 +1,4 @@
 #!/usr/bin/env groovy
 @Library('edge-ci@sda-client-ble-ci') _
 
-sda-client-ble-ci()
+sda_client_ble_ci()
