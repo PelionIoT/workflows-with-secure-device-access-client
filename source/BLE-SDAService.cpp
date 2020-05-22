@@ -51,22 +51,19 @@ void BLESDA::send_next_buff() {
 	if((queue_len - msg_index) < BLE_PACKET_SIZE) {
 		transmit_data_len = (queue_len - msg_index);
 	}
-	uint8_t* txqueue = (uint8_t*)malloc(transmit_data_len*sizeof(uint8_t));
-	if(!txqueue) {
-		tr_error("Not able to allocate Tx memory..aborting");
-	}
-	memset(txqueue,0,transmit_data_len);
-	memcpy(&txqueue[0], &msg_queue[msg_index],transmit_data_len);
+	write(&msg_queue[msg_index], transmit_data_len);
 	msg_index += transmit_data_len;
-	write(txqueue, transmit_data_len);
 	tr_info("Tx Len: %d",transmit_data_len);
-	free(txqueue);
 }
 
 sda_protocol_error_t BLESDA::BLETX(Frag_buff* header, uint8_t len) {
 	if (ble.gap().getState().connected) {
 		uint8_t transmit_data_len = len + START_DATA_BYTE+1;
 		uint8_t* msg = (uint8_t*)malloc(transmit_data_len * sizeof(uint8_t));
+		if(!msg) {
+			tr_error("Not able to create memory for msg");
+			return PT_ERR_MEM;
+		}
 		memset(msg,0,transmit_data_len);
 		memcpy(msg, header, START_DATA_BYTE);
 		memcpy(&msg[START_DATA_BYTE], header->payload, len);
@@ -134,12 +131,8 @@ sda_protocol_error_t BLESDA::sda_fragment_datagram(uint8_t* sda_payload,
 
 sda_protocol_error_t BLESDA::ProcessBuffer(Frag_buff* frag_sda) {
 	if (ble.gap().getState().connected) {
-		if (frag_sda->length >= 2300) {
-			return PT_ERR_BUFF_OVERFLOW;	//  sda generates almost 530 bytes of
-											//  token with out function parameters.
-											//  Internally I have chosen the upper
-											//  limit of file size
-		  									//  is 2KB. This is done to safeguard the SDA Helper for not getting the
+		if (frag_sda->length >= 2048) {
+			return PT_ERR_BUFF_OVERFLOW;	//  This is done to safeguard the SDA Helper for not getting the
 		}   								//  the hardfault.
 		uint16_t sda_response_size = 0;
 		if (msg_to_sda == NULL) {

@@ -35,7 +35,7 @@
 #define SDA_ACK 3
 #define SDA_REQ 2
 
-#define response_size 1700
+#define response_size 1536
 
 class BLESDA {
    public:
