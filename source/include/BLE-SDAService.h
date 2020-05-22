@@ -35,6 +35,8 @@
 #define SDA_ACK 3
 #define SDA_REQ 2
 
+#define response_size 1536
+
 class BLESDA {
    public:
 	/** Maximum length of data (in bytes) that the UART service module can
