@@ -137,7 +137,7 @@ bool demo_callback_read_data(uint8_t* path, uint8_t path_size, char* response) {
 		return false;
 	}
 	tr_info("File read starting");
-	fscanf(r, "%[^NULL]", response);	// reading file till NULL. That means
+	fscanf(r, "%[^\0]", response);		// reading file till NULL. That means
 										// reading the entire file in a string.
 	fclose(r);
 	tr_info("Data is: %s", response);
