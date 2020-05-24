@@ -1,8 +1,8 @@
 # workflows-with-secure-device-access-client
 
-`workflows-with-secure-device-access-client` is an Mbed OS application that communicates with Personal Digital Assistant (PDA) and executes Secure Device Access (SDA) authorized and authenticated workflows. For information about SDA, please see the [public SDA documentation](https://www.pelion.com/docs/device-management/current/device-management/secure-device-access.html).
+`workflows-with-secure-device-access-client` is an Mbed OS application that communicates with the Pelion Device Management mobile application and executes Secure Device Access (SDA) authorized and authenticated workflows. For information about SDA, please see the [public SDA documentation](https://www.pelion.com/docs/device-management/current/device-management/secure-device-access.html).
 
-The application implements a Bluetooth Low Energy (BLE) communication interface with PDA and integrates [littlefs](https://github.com/ARMmbed/littlefs) to read and write files to and from the target device.
+The application implements a Bluetooth Low Energy (BLE) communication interface with Pelion Device Management mobile application and integrates [littlefs](https://github.com/ARMmbed/littlefs) to read and write files to and from the target device.
 
 This document explains how to build `workflows-with-secure-device-access-client` and flash the binary onto your device:
 
