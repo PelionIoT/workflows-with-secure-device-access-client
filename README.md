@@ -34,7 +34,7 @@ mbed config -G GCC_ARM_PATH "~/<gcc-arm-none-eabi-6-xxx>/bin"
 ## Build Steps
 - Clone the application and navigate to the folder.
     ```
-    git clone https://github.com/ARMmbed/workflows-with-secure-device-access-client
+    git clone https://github.com/armPelionEdge/workflows-with-secure-device-access-client
     cd workflows-with-secure-device-access-client
     ```
 
