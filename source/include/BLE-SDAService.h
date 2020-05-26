@@ -65,8 +65,8 @@ class BLESDA {
 
 	uint16_t getCharacteristicHandle();
 
-	const uint8_t* getUUID() { 
-		return ServiceUUID; 
+	const uint8_t* getUUID() {
+		return ServiceUUID;
 		}
 
 	sda_protocol_error_t BLETX(Frag_buff* header, uint8_t len);
