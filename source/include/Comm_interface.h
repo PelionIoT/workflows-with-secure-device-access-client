@@ -28,6 +28,6 @@ class Comm_interface {
 
    private:
 	events::EventQueue _event_queue;
-	BLEProcess* _bleprocess;
+	BLEProcess* _bleprocess = NULL;
 };
 #endif
