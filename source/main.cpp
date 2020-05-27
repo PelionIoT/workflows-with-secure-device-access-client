@@ -46,7 +46,7 @@ static int g_demo_main_status =
 	EXIT_FAILURE;  // holds the demo main task return code
 
 BlockDevice* bd = BlockDevice::get_default_instance();
-LittleFileSystem fs("fs");
+LittleFileSystem fs(MOUNT_POINT);
 
 static void demo_main() {
 	mcc_platform_sw_build_info();
