@@ -212,8 +212,7 @@ sda_status_e application_callback(sda_operation_ctx_h handle,
 	 * call the demo function to get the response.
 	*/
 	else if (memcmp(func_callback_name, "read-data", func_callback_name_size) == 0) {
-		const uint8_t **param_data = (const uint8_t **)calloc(15, sizeof(uint8_t *));	// 15*4 is 60 Bytes which is the length for
-									 													// path name.
+		const uint8_t **param_data = (const uint8_t **)calloc(500, sizeof(uint8_t *));
 		if (!param_data) {
 			tr_error("Can not allocate memory for param_data, not enough space");
 			sda_status_for_response = SDA_STATUS_ERROR;
