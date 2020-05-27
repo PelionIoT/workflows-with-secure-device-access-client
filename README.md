@@ -1,30 +1,38 @@
 # workflows-with-secure-device-access-client
 
-A mbedOS application which communicates with personal digital assistant (PDA) and executes SDA authorized and authenticated workflows. For information about Secure Device Access (SDA), please see the [public SDA documentation](https://www.pelion.com/docs/device-management/current/device-management/secure-device-access.html).
+`workflows-with-secure-device-access-client` is an Mbed OS application that communicates with the Pelion Device Management mobile application and executes Secure Device Access (SDA) authorized and authenticated workflows. For information about SDA, please see the [public SDA documentation](https://www.pelion.com/docs/device-management/current/device-management/secure-device-access.html).
 
-It enables a Bluetooth Low Energy (BLE) communication interface with PDA and integrates [littlefs](https://github.com/ARMmbed/littlefs) for reading and writing the files to and from the target device.
+The application implements a Bluetooth Low Energy (BLE) communication interface with Pelion Device Management mobile application and integrates [littlefs](https://github.com/ARMmbed/littlefs) to read and write files to and from the target device.
+
+This document explains how to build `workflows-with-secure-device-access-client` and flash the binary onto your device:
+
+- [Prerequisites](#prerequisites)
+- [Building the application](#building-the-application)
+- [Flashing the binary](#flashing-the-binary)
+- [Debugging](#debugging)
+- [Troubleshooting](#troubleshooting)
 
 ## Prerequisites
 
 ### Hardware requirements
-- A [ST DISCO-L475VG-IOT01A](https://os.mbed.com/platforms/ST-Discovery-L475E-IOT01A/) board
-- A USB cable (USB Type A to Micro-AB)
+- An [ST DISCO-L475VG-IOT01A](https://os.mbed.com/platforms/ST-Discovery-L475E-IOT01A/) board.
+- A USB cable (USB Type A to Micro-AB).
 
 ### Working environment requirements
 - A Device Management account with the secure device access feature and workflow management service activated.
-- Operating systems we have tested with: Ubuntu 18.04
+- Operating systems we have tested: Ubuntu 18.04.
 
 ### Library dependencies
 - mbed-os v5.15.1
 - mbed-cloud-client v4.2.1
 
-These will be installed when you run `mbed deploy` command as instructed in the Build Steps section of this doc.
+Mbed CLI installs these dependencies when you run the `mbed deploy` command as part of the [build steps](#build-steps).
 
 ### Tools and toolchains
-- [Install Python 2.7](https://www.python.org/download/releases/2.7/)
-- [Install Mbed CLI](https://os.mbed.com/docs/mbed-os/v5.15/quick-start/offline-with-mbed-cli.html)
+- [Install Python 2.7](https://www.python.org/download/releases/2.7/).
+- [Install Mbed CLI](https://os.mbed.com/docs/mbed-os/v5.15/quick-start/offline-with-mbed-cli.html).
 - [GNU Arm GCC Compiler](https://www.pelion.com/docs/device-management/current/cloud-requirements/tool-requirements.html#notes-for-toolchains).
-- [pyOCD](https://pypi.org/project/pyocd/)
+- [pyOCD](https://pypi.org/project/pyocd/).
 - [Update udev rules](https://github.com/mbedmicro/pyOCD/tree/master/udev).
     To update, download the udev rules directory to your system, navigate to the `udev` directory and run:
     ```
@@ -34,47 +42,53 @@ These will be installed when you run `mbed deploy` command as instructed in the 
     ```
     apt-get install libusb-1.0-0-dev
     ```
-
-Note: After Mbed CLI is installed, tell Mbed where to find the Arm embedded toolchain.
+After you install Mbed CLI and GNU Arm GCC Compiler, set the path to the Arm embedded toolchain:
 ```
 mbed config -G GCC_ARM_PATH "~/<gcc-arm-none-eabi-6-xxx>/bin"
 ```
 
-## Build Steps
-- Clone the application and navigate to the folder.
+## Building the application
+
+1. Clone the application and navigate to the folder:
+
     ```
     git clone https://github.com/armPelionEdge/workflows-with-secure-device-access-client
     cd workflows-with-secure-device-access-client
     ```
 
-- If you are using [developer credentials](https://www.pelion.com/docs/device-management/current/sda/obtaining-a-bootstrap-certificate-and-trust-anchor.html#in-developer-mode), build the target as described below. In production mode, skip these steps, and provision and store your credentials on your target, as described in the [provisioning documentation](https://www.pelion.com/docs/device-management/current/provisioning-process/index.html).
-    - Overwrite the mbed_cloud_dev_credentials.c template file in the workflows-with-secure-device-access-client folder with the mbed_cloud_dev_credentials.c file that you [downloaded from the Portal](https://www.pelion.com/docs/device-management/current/sda/obtaining-a-bootstrap-certificate-and-trust-anchor.html#generate-a-bootstrap-certificate).
-    - From the workflows-with-secure-device-access-client folder, run the following command to overwrite the mbed_cloud_trust_anchor_credentials.c template file with your [trust anchor](https://www.pelion.com/docs/device-management/current/sda/obtaining-a-bootstrap-certificate-and-trust-anchor.html#obtain-a-trust-anchor):
-        ```
-        python create_trust_anchor_dev_cred.py -t "<trust anchor>"
-        ```
-        For example:
-        ```
-        python create_trust_anchor_dev_cred.py -t "-----BEGIN PUBLIC KEY-----MFkaEqYHKoZIzj0CAQYIKoZIzj0GAQcDHgAEbiRnZgdzoBpySFDPVPFp3J7yOmrOXJ09O5qVUMOD5knUjX7YbQBF0ueJWPz6tkTGbzORAwDzvRXYUA7vZpB+og==-----END PUBLIC KEY-----"
-        ```
-        Note: Be sure to remove any line breaks (\n or \r) in the trust anchor before running create_trust_anchor_dev_cred.py.
+1. Provision device credentials:
 
-- Install the dependencies.
+    - If you are using [developer credentials](https://www.pelion.com/docs/device-management/current/sda/obtaining-a-bootstrap-certificate-and-trust-anchor.html#in-developer-mode):
+        1. Overwrite the `mbed_cloud_dev_credentials.c` template file in the `workflows-with-secure-device-access-client` folder with the `mbed_cloud_dev_credentials.c` file that you [download from the Portal](https://www.pelion.com/docs/device-management/current/sda/obtaining-a-bootstrap-certificate-and-trust-anchor.html#generate-a-bootstrap-certificate).
+        1. From the `workflows-with-secure-device-access-client` folder, overwrite the `mbed_cloud_trust_anchor_credentials.c` template file with your [trust anchor](https://www.pelion.com/docs/device-management/current/sda/obtaining-a-bootstrap-certificate-and-trust-anchor.html#obtain-a-trust-anchor):
+            ```
+            python create_trust_anchor_dev_cred.py -t "<trust anchor>"
+            ```
+            For example:
+            ```
+            python create_trust_anchor_dev_cred.py -t "-----BEGIN PUBLIC KEY-----MFkaEqYHKoZIzj0CAQYIKoZIzj0GAQcDHgAEbiRnZgdzoBpySFDPVPFp3J7yOmrOXJ09O5qVUMOD5knUjX7YbQBF0ueJWPz6tkTGbzORAwDzvRXYUA7vZpB+og==-----END PUBLIC KEY-----"
+            ```
+            Note: Be sure to remove any line breaks (\n or \r) in the trust anchor before running `create_trust_anchor_dev_cred.py`.
+
+    - In production mode, provision and store your credentials on your device, as described in the [provisioning documentation](https://www.pelion.com/docs/device-management/current/provisioning-process/index.html).
+
+1. Install library dependencies:
     ```
     mbed deploy
     ```
-    This will download all the necessary libraries required to build this application. Currently, the application is developed with mbed-os v5.15.1 and mbed-cloud-client v4.2.1.
+    This downloads all libraries required to build the application.
 
-- Apply the patches to mbed-os. Navigate to mbed-os folder in workflows-with-secure-device-access-client.
+1. Navigate to the `mbed-os` folder in `workflows-with-secure-device-access-client` and apply Mbed OS patches:
     ```
     git am ../patches/*
     ```
 
-- Configure the BLE interface by providing the values to the following parameters defined in `ble-config.h`.
+1. Configure the BLE interface by setting values for the parameters defined in `ble-config.h`.
 
-    Note: BLE_PACKET_SIZE should range from 12 to 232 bytes. We recommend you to use the large packet size as it will reduce the number of BLE packets thus increasing the throughput and also reducing the power consumption.
+    Note: `BLE_PACKET_SIZE` should be 12 to 232 bytes. We recommend you use a large packet size to reduce the number of BLE packets, increase throughput and reduce power consumption.
 
-    The following values are used as an example -
+    Example:
+
     ```C
     #define BLE_PACKET_SIZE             200
     #define Device_Local_Name           "DISCO"
@@ -103,45 +117,45 @@ mbed config -G GCC_ARM_PATH "~/<gcc-arm-none-eabi-6-xxx>/bin"
     };
     ```
 
-- Compile the application.
+1. Compile the application:
     ```
     mbed compile -t GCC_ARM -m DISCO_L475VG_IOT01A
     ```
 
-## Flash the binary
+## Flashing the binary
 
-- Connect the target to your computer using USB.
-- In the terminal, run
+1. Connect the board to your computer using USB.
+1. In the terminal, run:
     ```
     pyocd gdbserver
     ```
-    Hit enter while holding the reset button on the board.
+    Press Enter while holding the Reset button on the board.
 
-* In another terminal, navigate to the `BUILD` folder in the workflows-with-secure-device-access-client and run
+1. In another terminal, navigate to the `BUILD` folder in `workflows-with-secure-device-access-client`, and run:
     ```
     arm-none-eabi-gdb
     ```
-    This will launch the gdb terminal.
+    This launches the GDB (GNU Debugger) terminal.
 
-* Connect to the pyOCD server by running the following command inside the gdb terminal.
+1. To connect to the pyOCD server, inside the GDB terminal, run:
     ```
     target remote:3333
     ```
 
-* Load the binary onto your board, run
+1. Load the binary onto your board:
     ```
     load workflows-with-secure-device-access-client.hex
     ```
-    The LED blinks rapidly, wait for it to finish.
+    The LED blinks rapidly. Wait for it to finish.
 
 ## Debugging
 
-- Connect the target to your computer using USB.
-- Use `mbedls` to detect and list Mbed Enabled devices connected to the computer.
-- Use PuTTY or any other serial console with configuration 115200 baud 8-n-1 to view the logs.
+1. Connect the board to your computer using USB.
+1. Use `mbedls` to detect and list Mbed Enabled devices connected to the computer.
+1. Use PuTTY or any other serial console with 115200 baud 8-N-1 configuration to view the logs.
 
-Note: To change the trace level of logs, open the `mbed_app.json` present in the root folder of the project, in the option: ` mbed-trace-max-level ` change the value of `TRACE_LEVEL_ERROR` to `TRACE_LEVEL_INFO`. Compile the project and flash the new binary.
+Note: To change the trace level of logs, open the `mbed_app.json` file in the root folder of the project and change the value of `MBED_TRACE_MAX_LEVEL` from `TRACE_LEVEL_ERROR` to `TRACE_LEVEL_INFO`. Compile the project and flash the new binary.
 
 ## Troubleshooting
 
-Please see the [GitHub issues](https://github.com/armPelionEdge/workflows-with-secure-device-access-client/issues) for solutions to common build errors.
+Please see [GitHub issues](https://github.com/armPelionEdge/workflows-with-secure-device-access-client/issues) for solutions to common build errors.
