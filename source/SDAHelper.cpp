@@ -169,11 +169,9 @@ sda_status_e application_callback(sda_operation_ctx_h handle,
 	*/
 	if (memcmp(func_callback_name, "configure", func_callback_name_size) == 0) {
 		const uint8_t **param_data = (const uint8_t **)calloc(
-			500, sizeof(uint8_t *));  // 500* 4 is 2000 Bytes which is the
-									  // response buffer length.
+			500, sizeof(uint8_t *));	//Buffer size to hold the data params coming from sda.
 		if (!param_data) {
-			tr_error(
-				"Can not allocate memory for param_data, not enough space");
+			tr_error("Can not allocate memory for param_data, not enough space");
 			sda_status_for_response = SDA_STATUS_ERROR;
 			goto out;
 		}
@@ -342,6 +340,7 @@ sda_status_e is_operation_permitted(sda_operation_ctx_h operation_context,
 
 	if ((scope == NULL) || (scope_size == 0)) {
 		tr_warn("Got empty or invalid scope, skipping this scope");
+		return SDA_STATUS_NO_MORE_SCOPES;
 	}
 
 	// Check operation is in scope

@@ -97,6 +97,7 @@ mbed config -G GCC_ARM_PATH "~/<gcc-arm-none-eabi-6-xxx>/bin"
     #define HARDWARE_REVISION           "0.1.1"
     #define FIRMWARE_REVISION           "0.1.1"
     #define SOFTWARE_REVISION           "0.1.1"
+    #define MOUNT_POINT                 "fs"
 
     const uint8_t  ServiceBaseUUID[LONG_UUID_LENGTH] = {
         0x6E, 0x40, 0x00, 0x00, 0xB5, 0xA3, 0xF3, 0x93,

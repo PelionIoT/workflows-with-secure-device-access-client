@@ -100,19 +100,12 @@ void display_faulty_message(const char* fault_message) {
 // path+content
 bool demo_callback_writedata(uint8_t* data, uint16_t data_len, char* response) {
 	char* token = strtok((char*)data, SEPERATOR);
-	uint8_t path_len = strlen(token) + 4 + 1;
-	char final_path[path_len] = {0};
-	char final_data[data_len] = {0};
-	sprintf(final_path, "/fs/%s", (char*)token);
-	tr_info("Writing file in path: %s", final_path);
-	FILE* f = fopen(final_path, "w");
+	tr_info("Writing file in path: %s", token);
+	FILE* f = fopen(token, "w");
 	if (f != NULL) {
 		token = strtok(NULL, "^");
-		snprintf(final_data, (data_len - 4), "%s",
-				 token);  // removing the length of appended path /fs/ length
-						  // from the data length.
-		tr_info("Data is: %s", final_data);
-		if (fprintf(f, "%s", (const char*)final_data)) {
+		tr_info("Data is: %s", token);
+		if (fprintf(f, "%s", token)) {
 			sprintf(response, "File write completed!");
 			fflush(f);
 			fclose(f);
@@ -130,11 +123,8 @@ bool demo_callback_writedata(uint8_t* data, uint16_t data_len, char* response) {
 }
 // response pointer should be allocated before calling this function
 bool demo_callback_read_data(uint8_t* path, uint8_t path_size, char* response) {
-	uint8_t path_len = path_size + 4 + 1;  // because we have to add /fs/ to the front of the file name
-	char final_path[path_len] = {0};
-	snprintf(final_path, path_len, "/fs/%s", (char*)path);
-	tr_info("Reading data from file-path:%s", final_path);
-	FILE* r = fopen(final_path, "r");
+	tr_info("Reading data from file-path: %s", path);
+	FILE* r = fopen((char*)path, "r");
 	if (!r) {
 		tr_error("Can not open file %s", strerror(errno));
 		tr_error("Err: %s", strerror(errno));
@@ -142,6 +132,10 @@ bool demo_callback_read_data(uint8_t* path, uint8_t path_size, char* response) {
 	}
 	fseek (r , 0 , SEEK_END);
 	int file_size = ftell(r);
+	if(file_size < 0) {
+		fclose(r);
+		return false;
+	}
 	rewind(r);
 	tr_info("File read starting");
 	int read_bytes = fread (response,1,file_size,r);

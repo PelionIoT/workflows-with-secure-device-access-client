@@ -35,19 +35,32 @@ For Device Information Service in BLE
  * Software Revision
  * Define BLE packet Length that will transmit in each transition, should be '8' Less than MTU.
  */
-#define BLE_PACKET_SIZE             0
-#define Device_Local_Name
-#define MANUFACTURER_NAME
-#define MODEL_NUM
-#define HARDWARE_REVISION
-#define FIRMWARE_REVISION
-#define SOFTWARE_REVISION
+#define BLE_PACKET_SIZE             200
+#define Device_Local_Name           "DISCO"
+#define MANUFACTURER_NAME           "ARM"
+#define MODEL_NUM                   "0.1.1"
+#define HARDWARE_REVISION           "0.1.1"
+#define FIRMWARE_REVISION           "0.1.1"
+#define SOFTWARE_REVISION           "0.1.1"
+#define MOUNT_POINT                 "fs"
 
-const uint8_t  ServiceBaseUUID[LONG_UUID_LENGTH]    = {0};
-const uint16_t ServiceShortUUID                     = 0x0000;
-const uint16_t CharacteristicShortUUID              = 0x0000;
-const uint8_t  ServiceUUID[LONG_UUID_LENGTH]        = {0};
-const uint8_t  CharacteristicUUID[LONG_UUID_LENGTH] = {0};
+const uint8_t  ServiceBaseUUID[LONG_UUID_LENGTH] = {
+    0x6E, 0x40, 0x00, 0x00, 0xB5, 0xA3, 0xF3, 0x93,
+    0xE0, 0xA9, 0xE5, 0x0E, 0x24, 0xDC, 0xCA, 0x9E,
+};
+
+const uint16_t ServiceShortUUID                 = 0x0001;
+const uint16_t CharacteristicShortUUID          = 0x0002;
+
+const uint8_t  ServiceUUID[LONG_UUID_LENGTH] = {
+    0x6E, 0x40, (uint8_t)(ServiceShortUUID >> 8), (uint8_t)(ServiceShortUUID & 0xFF), 0xB5, 0xA3, 0xF3, 0x93,
+    0xE0, 0xA9, 0xE5, 0x0E, 0x24, 0xDC, 0xCA, 0x9E,
+};
+
+const uint8_t  CharacteristicUUID[LONG_UUID_LENGTH] = {
+    0x6E, 0x40, (uint8_t)(CharacteristicShortUUID >> 8), (uint8_t)(CharacteristicShortUUID & 0xFF), 0xB5, 0xA3, 0xF3, 0x93,
+    0xE0, 0xA9, 0xE5, 0x0E, 0x24, 0xDC, 0xCA, 0x9E,
+};
 
 #if BLE_PACKET_SIZE == 0
     #error "Fill the configurations with the details like UUID, Name, BLE_PACKET_SIZE etc!"
