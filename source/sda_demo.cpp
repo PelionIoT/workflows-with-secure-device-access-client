@@ -1,18 +1,22 @@
-// ----------------------------------------------------------------------------
-// Copyright 2017-2019 ARM Ltd.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// ----------------------------------------------------------------------------
+/*
+ * ----------------------------------------------------------------------------
+ * Copyright 2020 ARM Ltd.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ----------------------------------------------------------------------------
+ */
 
 #include "include/sda_demo.h"
 #include "BlockDevice.h"
@@ -136,11 +140,14 @@ bool demo_callback_read_data(uint8_t* path, uint8_t path_size, char* response) {
 		tr_error("Err: %s", strerror(errno));
 		return false;
 	}
+	fseek (r , 0 , SEEK_END);
+	int file_size = ftell(r);
+	rewind(r);
 	tr_info("File read starting");
-	fscanf(r, "%[^\0]", response);  // reading file till NULL. That means
-									// reading the entire file in a string.
+	int read_bytes = fread (response,1,file_size,r);
 	fclose(r);
 	tr_info("Data is: %s", response);
+	tr_info("bytes read: %d File size: %d",read_bytes, file_size);
 	tr_info("File read complete");
 	return true;
 }

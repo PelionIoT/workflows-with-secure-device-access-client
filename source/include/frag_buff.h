@@ -1,19 +1,22 @@
-
-// ----------------------------------------------------------------------------
-// Copyright 2017-2019 ARM Ltd.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// ----------------------------------------------------------------------------
+/*
+ * ----------------------------------------------------------------------------
+ * Copyright 2020 ARM Ltd.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ----------------------------------------------------------------------------
+ */
 
 #ifndef __FRAG_BUFF_H__
 #define __FRAG_BUFF_H__
@@ -31,9 +34,9 @@ typedef struct _Frag_buff {
 	uint8_t more_frag : 1;  // More fragment bit- it tells if there are more
 							// packets or not. if set- then there are more.
 	uint8_t frag_num : 3;   // Fragment Number
+	uint8_t resv1 : 2;		// reserve
 	uint8_t frag_length;	// Legth of fragment
 	uint16_t length;		// total length
-	uint8_t resv1 : 2;		// reserve
 	uint8_t resv2;
 	uint8_t resv3;
 	uint16_t resv4;

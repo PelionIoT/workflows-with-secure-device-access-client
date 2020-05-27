@@ -33,7 +33,15 @@ Mbed CLI installs these dependencies when you run the `mbed deploy` command as p
 - [Install Mbed CLI](https://os.mbed.com/docs/mbed-os/v5.15/quick-start/offline-with-mbed-cli.html).
 - [GNU Arm GCC Compiler](https://www.pelion.com/docs/device-management/current/cloud-requirements/tool-requirements.html#notes-for-toolchains).
 - [pyOCD](https://pypi.org/project/pyocd/).
-
+- [Update udev rules](https://github.com/mbedmicro/pyOCD/tree/master/udev).
+    To update, download the udev rules directory to your system, navigate to the `udev` directory and run:
+    ```
+    sudo cp *.rules /etc/udev/rules.d
+    ```
+- libusb
+    ```
+    apt-get install libusb-1.0-0-dev
+    ```
 After you install Mbed CLI and GNU Arm GCC Compiler, set the path to the Arm embedded toolchain:
 ```
 mbed config -G GCC_ARM_PATH "~/<gcc-arm-none-eabi-6-xxx>/bin"
