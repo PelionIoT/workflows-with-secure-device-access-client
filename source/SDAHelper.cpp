@@ -226,14 +226,14 @@ sda_status_e application_callback(sda_operation_ctx_h handle,
 			free(param_data);
 			goto out;
 		}
-		char *path = (char *)malloc(param_size * sizeof(char));
+		char *path = (char *)malloc((param_size+1) * sizeof(char));
 		if (!path) {
 			free(param_data);
 			tr_error("Can not allocate memory for path, not enough space");
 			sda_status_for_response = SDA_STATUS_ERROR;
 			goto out;
 		}
-		memset(path, 0, param_size);
+		memset(path, 0, param_size+1);
 		memcpy(&(path[0]), &(param_data[0][0]), param_size);
 		success =
 			demo_callback_read_data((uint8_t *)path, param_size, response);
