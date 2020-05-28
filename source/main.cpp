@@ -37,6 +37,7 @@
 #include "mbed_stats_helper.h"
 #include "platform/Callback.h"
 #include "platform/NonCopyable.h"
+#include "version.h"
 
 using mbed::callback;
 
@@ -94,6 +95,7 @@ static void demo_main() {
 }
 
 int main(void) {
+	tr_cmdline("Version: %d.%d.%d",MAJOR_VERSION, MINOR_VERSION, PATCH_NUMBER);
 	bool success = mbed_trace_helper_init(
 		TRACE_ACTIVE_LEVEL_ALL | TRACE_MODE_COLOR, false);
 	if (!success) {
