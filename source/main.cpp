@@ -95,12 +95,12 @@ static void demo_main() {
 }
 
 int main(void) {
-	tr_cmdline("Version: %d.%d.%d",MAJOR_VERSION, MINOR_VERSION, PATCH_NUMBER);
 	bool success = mbed_trace_helper_init(
 		TRACE_ACTIVE_LEVEL_ALL | TRACE_MODE_COLOR, false);
 	if (!success) {
 		return EXIT_FAILURE;
 	}
+	tr_cmdline("Version: %d.%d.%d",MAJOR_VERSION, MINOR_VERSION, PATCH_NUMBER);
 	success = (mcc_platform_init() == 0);
 	if (success) {
 		success = mcc_platform_run_program(&demo_main);
