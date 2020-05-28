@@ -21,7 +21,7 @@
 #ifndef __VERSION_H__
 #define __VERSION_H__
 
-#define MAJOR_VERSION 			1
+#define MAJOR_VERSION			1
 #define MINOR_VERSION			0
 #define PATCH_NUMBER			1
 
