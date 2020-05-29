@@ -1,5 +1,4 @@
 BUILD
 mbed-os
-mbed-cloud-client-platform-common
 mbed-cloud-client
 .vscode

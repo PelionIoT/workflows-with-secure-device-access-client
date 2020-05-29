@@ -37,6 +37,7 @@
 #include "mbed_stats_helper.h"
 #include "platform/Callback.h"
 #include "platform/NonCopyable.h"
+#include "version.h"
 
 using mbed::callback;
 
@@ -99,6 +100,7 @@ int main(void) {
 	if (!success) {
 		return EXIT_FAILURE;
 	}
+	tr_cmdline("Version: %s",FIRMWARE_REVISION);
 	success = (mcc_platform_init() == 0);
 	if (success) {
 		success = mcc_platform_run_program(&demo_main);
