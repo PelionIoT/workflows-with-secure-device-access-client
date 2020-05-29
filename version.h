@@ -21,8 +21,13 @@
 #ifndef __VERSION_H__
 #define __VERSION_H__
 
+#define xstr(s) str(s)
+#define str(s) #s
+
 #define MAJOR_VERSION			1
 #define MINOR_VERSION			0
 #define PATCH_NUMBER			1
+
+#define FIRMWARE_REVISION xstr(MAJOR_VERSION.MINOR_VERSION.PATCH_NUMBER)
 
 #endif

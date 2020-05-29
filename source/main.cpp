@@ -100,7 +100,7 @@ int main(void) {
 	if (!success) {
 		return EXIT_FAILURE;
 	}
-	tr_cmdline("Version: %d.%d.%d",MAJOR_VERSION, MINOR_VERSION, PATCH_NUMBER);
+	tr_cmdline("Version: %s",FIRMWARE_REVISION);
 	success = (mcc_platform_init() == 0);
 	if (success) {
 		success = mcc_platform_run_program(&demo_main);

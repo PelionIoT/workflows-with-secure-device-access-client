@@ -33,6 +33,7 @@
 #include "events/EventQueue.h"
 #include "platform/Callback.h"
 #include "platform/NonCopyable.h"
+#include "version.h"
 
 #define TRACE_GROUP "blep"
 /**
@@ -89,7 +90,6 @@ class BLEProcess : private mbed::NonCopyable<BLEProcess> {
 	int getIndex();
 	char *getBuff();
 	void wait();
-	// char* _endpoint;
 	events::EventQueue &_event_queue;
 	BLE &_ble_interface;
 	char *_endpoint;
