@@ -184,7 +184,7 @@ sda_status_e application_callback(sda_operation_ctx_h handle,
 			param_data = NULL;
 			goto out;
 		}
-		char *fetch_data = (char *)malloc(param_size * sizeof(uint8_t));
+		char *fetch_data = (char *)malloc((param_size + 1) * sizeof(uint8_t));
 		if (!fetch_data) {
 			free(param_data);
 			tr_error(
@@ -192,7 +192,7 @@ sda_status_e application_callback(sda_operation_ctx_h handle,
 			sda_status_for_response = SDA_STATUS_ERROR;
 			goto out;
 		}
-		memset(fetch_data, 0, param_size);
+		memset(fetch_data, 0, param_size+1);
 		memcpy(&(fetch_data[0]), &(param_data[0][0]), param_size);
 		success = demo_callback_writedata((uint8_t *)fetch_data, param_size,
 										  response);
